@@ -100,8 +100,7 @@ class DeckPacket(Packet):
     def __init__(self, deck):
         Packet.__init__(self, PACKET_DECK) # ID del pacchetto
         for c in deck:
-            self.WriteString(c.Code)
-            self.WriteBool(c.IsSide)
+            self.WriteString(c.CardID)
 
 class DrawPacket(Packet):
     def __init__(self, reveal):

@@ -57,7 +57,7 @@ class DeckPrinter(wx.Printout):
         return (1, 1, 1, 1)
 
 #TO DO: Change structure to fit CFV decks
-""" def OnPrintPage(self, page):
+    def OnPrintPage(self, page):
         monsters = self.Deck.GetMonsters()
         spells = self.Deck.GetSpells()
         traps = self.Deck.GetTraps()
@@ -120,7 +120,7 @@ class DeckPrinter(wx.Printout):
             self.NewLine()
 
         return True
-"""
+
     def NewLine(self):
         self.CurrentY += self.VSpacer
 
