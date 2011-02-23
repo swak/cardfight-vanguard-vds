@@ -51,7 +51,7 @@ class Engine():
         self.Application = wx.App()
         self.BaseDirectory = os.getcwd()
 
-        splash = wx.SplashScreen(wx.Bitmap(os.path.join(self.BaseDirectory, 'splash.png'), wx.BITMAP_TYPE_PNG), wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_NO_TIMEOUT, 0, None, -1)
+        #splash = wx.SplashScreen(wx.Bitmap(os.path.join(self.BaseDirectory, 'splash.png'), wx.BITMAP_TYPE_PNG), wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_NO_TIMEOUT, 0, None, -1)
         self.SkinsDirectory = os.path.join(self.BaseDirectory, 'Skins') # Skins Directory
         self.LanguagesDirectory = os.path.join(self.BaseDirectory, 'Languages') # Languages Directory
         self.DecksDirectory = os.path.join(self.BaseDirectory, 'Decks') # Decks Directory
@@ -96,9 +96,9 @@ class Engine():
             if lastdeckpath and os.path.exists(lastdeckpath):
                 self.Frame.OnOpen(path=lastdeckpath)
 
-        splash.Refresh() # Refresh Splash
-        time.sleep(1) # Sleep di 1 secondo per mostrare lo splash :P
-        splash.Close() # Chiudo lo splash
+        #splash.Refresh() # Refresh Splash
+        #time.sleep(1) # Sleep di 1 secondo per mostrare lo splash :P
+        #splash.Close() # Chiudo lo splash
         self.Frame.Show() # Mostro il frame
         self.Application.MainLoop() # Loop dell'applicazione
     
