@@ -36,7 +36,12 @@ class GameCard():
 
     def IsMonster(self):
       return True
-
+    
+    def IsTrigger(self):
+        if self.Class == 'Trigger Unit':
+            return True
+        else:
+            return False
 
 
 

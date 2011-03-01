@@ -47,27 +47,28 @@ class MainFrame(wx.Frame):
         
         wx.Frame.__init__(self, *args, **kwargs)
 
-        self.Centre()
-        self.Engine = engine 
+        self.Centre() # Centro il frame nello screen
+        self.Engine = engine # Creo una variabile che punta all'engine
         self.SelectedFromDeck = ''
-        self.panel = wx.Panel(self) 
-        self.vbox1 = wx.BoxSizer(wx.VERTICAL) 
-        self.vbox2 = wx.BoxSizer(wx.VERTICAL) 
-        self.vbox3 = wx.BoxSizer(wx.VERTICAL) 
-        self.vbox4 = wx.BoxSizer(wx.VERTICAL) 
-        self.vbox5 = wx.BoxSizer(wx.VERTICAL) 
-        self.hbox = wx.BoxSizer(wx.HORIZONTAL) 
-        self.hmbox1 = wx.BoxSizer(wx.HORIZONTAL) 
-        self.hmbox2 = wx.BoxSizer(wx.HORIZONTAL) 
-        self.hmbox3 = wx.BoxSizer(wx.HORIZONTAL) 
-        self.hmbox4 = wx.BoxSizer(wx.HORIZONTAL) 
-        self.hmbox5 = wx.BoxSizer(wx.HORIZONTAL) 
-        self.hmbox6 = wx.BoxSizer(wx.HORIZONTAL) 
-        self.hmbox7 = wx.BoxSizer(wx.HORIZONTAL) 
-        self.hmbox8 = wx.BoxSizer(wx.HORIZONTAL) 
-        self.hmbox9 = wx.BoxSizer(wx.HORIZONTAL) 
-        self.hmbox10 = wx.BoxSizer(wx.HORIZONTAL) 
-        self.hmbox11 = wx.BoxSizer(wx.HORIZONTAL) 
+        self.SelectedFromSide = False
+        self.panel = wx.Panel(self) # Creo il Panel che conterrà i controlli ed i sizer
+        self.vbox1 = wx.BoxSizer(wx.VERTICAL) # Sizer Verticale n°1
+        self.vbox2 = wx.BoxSizer(wx.VERTICAL) # Sizer Verticale n°2
+        self.vbox3 = wx.BoxSizer(wx.VERTICAL) # Sizer Verticale n°3
+        self.vbox4 = wx.BoxSizer(wx.VERTICAL) # Sizer Verticale n°4
+        self.vbox5 = wx.BoxSizer(wx.VERTICAL) # Sizer Verticale n°5
+        self.hbox = wx.BoxSizer(wx.HORIZONTAL) # Sizer Orizzontale che contiene quelli verticali
+        self.hmbox1 = wx.BoxSizer(wx.HORIZONTAL) # Sizer per la parte centrale
+        self.hmbox2 = wx.BoxSizer(wx.HORIZONTAL) # *
+        self.hmbox3 = wx.BoxSizer(wx.HORIZONTAL) # *
+        self.hmbox4 = wx.BoxSizer(wx.HORIZONTAL) # *
+        self.hmbox5 = wx.BoxSizer(wx.HORIZONTAL) # *
+        self.hmbox6 = wx.BoxSizer(wx.HORIZONTAL) # *
+        self.hmbox7 = wx.BoxSizer(wx.HORIZONTAL) # *
+        self.hmbox8 = wx.BoxSizer(wx.HORIZONTAL) # *
+        self.hmbox9 = wx.BoxSizer(wx.HORIZONTAL) # *
+        self.hmbox10 = wx.BoxSizer(wx.HORIZONTAL) # *
+        self.hmbox11 = wx.BoxSizer(wx.HORIZONTAL) # *
         self.hvbox1 = wx.BoxSizer(wx.HORIZONTAL)
         self.Bind(wx.EVT_SHOW, self.OnUpdate)
         self.Bind(wx.EVT_CLOSE, self.OnClose)
@@ -105,15 +106,28 @@ class MainFrame(wx.Frame):
         # End CardList Control
         
         
-        self.MonsterHeaderText = wx.StaticText(self.panel, -1, 'Deck: 0')
+        self.MonsterHeaderText = wx.StaticText(self.panel, -1, 'Normal Units: 0')
         self.MonsterListCtrl = wx.ListCtrl(self.panel, -1, style = wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.LC_NO_HEADER | wx.LC_HRULES)
-        self.MonsterListCtrl.InsertColumn(0, 'Deck')
-        self.MonsterListCtrl.SetColumnWidth(0, 250)
+        self.MonsterListCtrl.InsertColumn(0, 'Normal Units')
+        self.MonsterListCtrl.SetColumnWidth(0, 200)
         self.MonsterListCtrl.InsertColumn(1, 'CardID')
         self.MonsterListCtrl.SetColumnWidth(1, 0)
         self.MonsterListCtrl.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnMonsterCardSelected)
         self.MonsterListCtrl.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.OnMonsterListItemRClick)
         self.MonsterListCtrl.Bind(wx.EVT_LEFT_DCLICK, self.OnRemoveCard)
+        
+        self.TriggerHeaderText = wx.StaticText(self.panel, -1, 'Trigger Units: 0')
+        self.TriggerListCtrl = wx.ListCtrl(self.panel, -1, style = wx.LC_REPORT |  wx.LC_SINGLE_SEL | wx.LC_NO_HEADER | wx.LC_HRULES)
+        self.TriggerListCtrl.InsertColumn(0, 'Trigger Units')
+        self.TriggerListCtrl.SetColumnWidth(0, 200)
+        self.TriggerListCtrl.InsertColumn(1, 'CardID')
+        self.TriggerListCtrl.SetColumnWidth(1, 0)
+        self.TriggerListCtrl.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnTriggerCardSelected)
+        self.TriggerListCtrl.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.OnTriggerListItemRClick)
+        self.TriggerListCtrl.Bind(wx.EVT_LEFT_DCLICK, self.OnRemoveCard)
+        
+        self.DeckCountText = wx.StaticText(self.panel, -1, 'Deck: 0')
+        
         #Monsterlist Popup
         self.MonsterListPopupMenu = wx.Menu()
         item = wx.MenuItem(self.MonsterListPopupMenu,ID_POPUP_REMOVE,self.Engine.GetLangString('Remove'))
@@ -122,6 +136,11 @@ class MainFrame(wx.Frame):
         self.MonsterListPopupMenu.AppendItem(item)
         # End Listbox
 
+        self.TriggerListPopupMenu = wx.Menu()
+        item = wx.MenuItem(self.TriggerListPopupMenu,ID_POPUP_REMOVE,self.Engine.GetLangString('Remove'))
+        item.SetBitmap(self.Engine.GetSkinImage('Totrunk'))
+        self.Bind(wx.EVT_MENU, self.OnRemoveCard, item)
+        self.TriggerListPopupMenu.AppendItem(item)
         
         self.CardNameCtrl = wx.StaticText(self.panel, -1, style=wx.ALIGN_CENTRE)
         self.CardImageCtrl = wx.StaticBitmap(self.panel, -1, size=(300,420))
@@ -132,28 +151,40 @@ class MainFrame(wx.Frame):
 
         # Layout
         
-        self.vbox1.Add(self.hvbox1, 0, wx.ALL | wx.EXPAND, 2) 
-        self.hvbox1.Add(self.CardSearchCtrl, 1, wx.ALL | wx.EXPAND, 2)
+        self.vbox1.Add(self.hvbox1, 0, wx.ALL | wx.EXPAND, 2) # Aggiungo il CardSearchCtrl al vbox1 (control,proprortions,styles,margins)
+        self.hvbox1.Add(self.CardSearchCtrl, 1, wx.ALL | wx.EXPAND, 2) # Aggiungo il CardSearchCtrl al vbox1 (control,proprortions,styles,margins)
         self.hvbox1.Add(self.CardReloadCtrl, 0, wx.ALL | wx.EXPAND, 2)
-        self.vbox1.Add(self.CardListCtrl, 1, wx.ALL | wx.EXPAND, 2)
-        self.vbox2.Add(self.hmbox1, 0, wx.ALL | wx.EXPAND, 2)
+        self.vbox1.Add(self.CardListCtrl, 1, wx.ALL | wx.EXPAND, 2) # Aggiungo il CardListCtrl al vbox1 (control,proprortions,styles,margins)
+
+        self.vbox2.Add(self.hmbox1, 0, wx.ALL | wx.EXPAND, 2) # Parte Centrale del Layout
         self.vbox2.Add(self.hmbox2, 1, wx.ALL | wx.EXPAND, 2) # *
+        self.vbox3.Add(self.hmbox3, 0, wx.ALL | wx.EXPAND, 2) # *
+        self.vbox3.Add(self.hmbox4, 1, wx.ALL | wx.EXPAND, 2) # *
         self.vbox4.Add(self.hmbox5, 0, wx.ALL | wx.EXPAND, 2) # *
         self.vbox4.Add(self.hmbox6, 1, wx.ALL | wx.EXPAND, 2) # *
-        self.vbox2.Add(self.hmbox7, 0, wx.ALL | wx.EXPAND, 2) # *
+        #self.vbox2.Add(self.hmbox7, 0, wx.ALL | wx.EXPAND, 2) # *
+        #self.vbox2.Add(self.hmbox8, 1, wx.ALL | wx.EXPAND, 2) # *
+        #self.vbox3.Add(self.hmbox9, 0, wx.ALL | wx.EXPAND, 2) # *
+        #self.vbox3.Add(self.hmbox10, 1, wx.ALL | wx.EXPAND, 2) # *
+        self.vbox4.Add(self.hmbox11, 1, wx.ALL | wx.EXPAND, 2) # *
         self.vbox4.AddSpacer(25,0) # *
         self.hmbox1.Add(self.MonsterHeaderText, 1, wx.ALL | wx.EXPAND, 2) # *
         self.hmbox2.Add(self.MonsterListCtrl, 1, wx.ALL | wx.EXPAND, 2) # *
+        self.hmbox3.Add(self.TriggerHeaderText, 1, wx.ALL | wx.EXPAND, 2) # *
+        self.hmbox4.Add(self.TriggerListCtrl, 1, wx.ALL | wx.EXPAND, 2) # *
+        self.hmbox11.Add(self.DeckCountText, 1, wx.ALL | wx.EXPAND, 2) # *
 
         self.vbox5.Add(self.CardNameCtrl, 0, wx.ALL | wx.ALIGN_CENTER , 4)
-        self.vbox5.Add(self.CardImageCtrl, 0, wx.ALL  | wx.EXPAND | wx.ALIGN_CENTER, 4)
+        self.vbox5.Add(self.CardImageCtrl, 0, wx.ALL | wx.ALIGN_CENTER, 4)
         self.vbox5.Add(self.CardDescriptionCtrl, 1, wx.ALL | wx.EXPAND | wx.ALIGN_CENTER, 4)
         
-        self.hbox.Add(self.vbox1, 1, wx.EXPAND | wx.ALL, 2)
-        self.hbox.Add(self.vbox2, 1, wx.EXPAND | wx.ALL, 2)
-        self.hbox.Add(self.vbox5, 1, wx.EXPAND | wx.ALL, 2) 
-        self.panel.SetSizer(self.hbox)
-        self.panel.Layout()
+        self.hbox.Add(self.vbox1, 1, wx.EXPAND | wx.ALL, 2) # Aggiungo il VBox1 al HBox (control,proprortions,styles,margins)
+        self.hbox.Add(self.vbox2, 1, wx.EXPAND | wx.ALL, 2) # Aggiungo il VBox2 al HBox (control,proprortions,styles,margins)
+        self.hbox.Add(self.vbox3, 1, wx.EXPAND | wx.ALL, 2) # Aggiungo il VBox3 al HBox (control,proprortions,styles,margins)
+        self.hbox.Add(self.vbox4, 0, wx.EXPAND | wx.ALL, 2) # Aggiungo il VBox3 al HBox (control,proprortions,styles,margins)
+        self.hbox.Add(self.vbox5, 0, wx.EXPAND | wx.ALL, 2) # Aggiungo il VBox3 al HBox (control,proprortions,styles,margins)
+        self.panel.SetSizer(self.hbox) # Setto il sizer del panel
+        self.panel.Layout() # Layout del panel
         
         # End Layout
         
@@ -293,13 +324,22 @@ class MainFrame(wx.Frame):
 
     def RefreshCardList(self):
         self.MonsterListCtrl.DeleteAllItems()
+        self.TriggerListCtrl.DeleteAllItems()
         mo = self.Engine.Deck.GetMonsters()
         mo.sort(lambda x, y: cmp(x.Name, y.Name))
         for c in mo:
             idx = self.MonsterListCtrl.InsertStringItem(self.MonsterListCtrl.GetItemCount(), c.Name)
             self.MonsterListCtrl.SetStringItem(idx, 1, c.CardID)
+        sp = self.Engine.Deck.GetTrigger()
+        sp.sort(lambda x, y: cmp(x.Name, y.Name))
+        for c in sp:
+            idx = self.TriggerListCtrl.InsertStringItem(self.TriggerListCtrl.GetItemCount(), c.Name)
+            self.TriggerListCtrl.SetStringItem(idx, 1, c.CardID)
         self.MonsterListCtrl.SetColumnWidth(0, 200)
-        self.MonsterHeaderText.SetLabel('Deck: ' + str(self.MonsterListCtrl.GetItemCount()))
+        self.TriggerListCtrl.SetColumnWidth(0, 200)
+        self.MonsterHeaderText.SetLabel('Normal Units: ' + str(self.MonsterListCtrl.GetItemCount()))
+        self.TriggerHeaderText.SetLabel('Trigger Units: ' + str(self.TriggerListCtrl.GetItemCount()))
+        self.DeckCountText.SetLabel('Deck: %s' % str(self.MonsterListCtrl.GetItemCount()+self.TriggerListCtrl.GetItemCount()))
 
     def ShowDialog(self, message, title, style, parent=None):
         if parent == None:
@@ -346,6 +386,9 @@ class MainFrame(wx.Frame):
     
     def OnMonsterListItemRClick(self,event):
         self.panel.PopupMenu(self.MonsterListPopupMenu)
+    
+    def OnTriggerListItemRClick(self,event):
+        self.panel.PopupMenu(self.TriggerListPopupMenu)
 
     def OnSearchInput(self, event):
         input = self.CardSearchCtrl.GetValue()
@@ -381,6 +424,12 @@ class MainFrame(wx.Frame):
         card = self.Engine.FindCardByCardID(cardID)
         self.SelectedFromDeck = cardID
         self.ShowCardInfo(card)
+    
+    def OnTriggerCardSelected(self, event):
+        cardID = self.TriggerListCtrl.GetItem(event.m_itemIndex, 1).GetText()
+        card = self.Engine.FindCardByCardID(cardID)
+        self.SelectedFromDeck = cardID
+        self.ShowCardInfo(card)
 
     # TO DO: 
     def ShowCardInfo(self,card):
@@ -394,11 +443,13 @@ class MainFrame(wx.Frame):
             desc += 'SKILL: ' + card.Skill + '\n'
         if card.Class == 'Trigger Unit':
             desc += 'TRIGGER: ' + card.Trigger + '\n'
-        desc += 'POWER:' + card.Power + ' CRITICAL:' + card.Critical +' SHIELD:' + card.Shield + '\n' + card.CardID 
+        desc += 'POWER:' + card.Power + ' CRITICAL:' + card.Critical +' SHIELD:' + card.Shield + '\n' + card.CardID + '\n'
         if card.Effect != '':
-            desc +=  '\n' + card.Effect
+            desc +=  '\n' + card.Effect + '\n'
         if card.Illustrator != '?' and card.Illustrator != '':
-            desc += '\n' + 'Illustrator: ' + card.Illustrator    
+            desc += '\n' + 'Illustrator: ' + card.Illustrator
+        if card.Text != '?' and card.Text != '':
+            desc += '\n' + 'Card text: ' + card.Text + '\n'   
         self.CardDescriptionCtrl.SetValue(desc)
         self.panel.SendSizeEvent()
 
