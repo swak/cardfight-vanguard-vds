@@ -3143,9 +3143,11 @@ class CardControl(GameObject, wx.DataObjectSimple):
             desc += 'TRIGGER: ' + self._card.Trigger + '\n'
         desc += '\n' + 'POWER:' + self._card.Power + ' CRITICAL:' + self._card.Critical +' SHIELD' + self._card.Shield + '\n'
         if self._card.Effect != '':
-            desc +=  '\n' + self._card.Effect
+            desc +=  '\n' + self._card.Effect + '\n'
         if self._card.Illustrator != '?' and self._card.Illustrator != '':
-            desc += '\n' + 'Illustrator: ' + self._card.Illustrator  + '\n'  
+            desc += '\n' + 'Illustrator: ' + self._card.Illustrator  + '\n'
+        if self._card.Text != '?' and self._card.Text != '':
+            desc += '\n' + 'Card text: ' + self._card.Text + '\n'   
         desc +=  self._card.CardID
         self._game.RefreshCardInfo(self._card.Name, self._engine.GetBigCardImage(self._card), desc)
     

@@ -50,7 +50,15 @@ class Deck():
     def GetMonsters(self):
         li = []
         for c in self.Cards:
-            li.append(c)
+            if c.Class != 'Trigger Unit':
+                li.append(c)
+        return li
+
+    def GetTrigger(self):
+        li = []
+        for c in self.Cards:
+            if c.Class == 'Trigger Unit':
+                li.append(c)
         return li
 
     def GetCards(self):
