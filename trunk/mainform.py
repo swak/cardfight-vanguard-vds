@@ -227,10 +227,10 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnSaveAs, item)
         self.mFile.AppendItem(item)
         
-        #item = wx.MenuItem(self.mFile,ID_ADVANCED,self.Engine.GetLangString('Advanced Search'))
-        #item.SetBitmap(self.Engine.GetSkinImage('Find'))
-       # self.Bind(wx.EVT_MENU, self.OnAdvancedSearchMenu, item)
-       # self.mFile.AppendItem(item)
+        item = wx.MenuItem(self.mFile,ID_ADVANCED,self.Engine.GetLangString('Advanced Search'))
+        item.SetBitmap(self.Engine.GetSkinImage('Find'))
+        self.Bind(wx.EVT_MENU, self.OnAdvancedSearchMenu, item)
+        self.mFile.AppendItem(item)
 
         item = wx.MenuItem(self.mFile,ID_PRINT,self.Engine.GetLangString('Print'))
         item.SetBitmap(self.Engine.GetSkinImage('Print'))

@@ -195,61 +195,52 @@ class AdvancedSearch(wx.Dialog):
         self.CardNameCtrl = wx.TextCtrl(self, -1, '', pos = (92,5), size = (140,-1))
         
         # Type
-        lista = ['Any','Monster','Spell','Trap']
+        lista = ['Any','Unit']
         self.CardTypeText = wx.StaticText(self, -1, 'Card: ', pos = (12,42))
         self.CardTypeChoice = wx.Choice(self, -1, pos = (90,37), size = (80,-1), choices = lista)
         self.CardTypeChoice.SetStringSelection('Any')
         self.CardTypeChoice.Bind(wx.EVT_CHOICE, self.OnCardTypeChoice)
         
         # SubType
-        self.CardSubTypeText = wx.StaticText(self, -1, 'Sub-Type: ', pos = (180, 42))
+        self.CardSubTypeText = wx.StaticText(self, -1, 'Class: ', pos = (180, 42))
         self.CardSubTypeText.Hide()
         self.CardSubTypeChoice = wx.Choice(self, -1, pos=(248,37), size=(80,-1), choices=[])
         self.CardSubTypeChoice.Hide()
         
         # Type2
-        li = ['Any','Aqua','Beast','Beast-Warrior','Dinosaur','Divine-Beast','Dragon','Fairy','Fiend','Fish','Insect','Machine','Plant','Pyro','Reptile','Rock','Sea Serpent','Spellcaster','Thunder','Warrior','Winged Beast','Zombie','Psychic']
-        self.CardType2Text = wx.StaticText(self, -1, 'Type: ', pos = (12, 74))
+        li = ['Any','Heat Haze','Megacolony','Nova Grappler','Nubatama','Oracle Think Tank','Royal Paladin','Spark Brothers','Tachikaze']
+        self.CardType2Text = wx.StaticText(self, -1, 'Clan: ', pos = (12, 74))
         self.CardType2Text.Hide()
         self.CardType2Choice = wx.Choice(self, -1, pos=(90,69), size=(80,-1), choices=li)
         self.CardType2Choice.Hide()
         
         # Attributo Mostro
-        li = ['Any','Light','Dark','Earth','Wind','Fire','Water','Divine']
-        self.CardAttributeText = wx.StaticText(self, -1, 'Attribute: ', pos = (180, 74))
+        li = ['Any','Alien','Angel','Cosmo Dragon','Demon','Dino Dragon','Dragonman','Flame Dragon', 'Elf', 'Giant', 'Gilman', 'Gnome', 'Hi-Beast', 'Human', 'Insect', 'Noble', 'Patroid', 'Salamander', 'Sylph', 'War Beast', 'Wing Dragon']
+        self.CardAttributeText = wx.StaticText(self, -1, 'Race: ', pos = (180, 74))
         self.CardAttributeChoice = wx.Choice(self, -1, pos = (248,69), size=(80,-1), choices = li)
         self.CardAttributeChoice.SetStringSelection('Any')
         self.CardAttributeText.Hide()
         self.CardAttributeChoice.Hide()
         
         # Stelle
-        self.CardStarsText = wx.StaticText(self, -1, 'Lv:  >=', pos = (12,108))
-        self.CardStarsSpin = wx.SpinCtrl(self, -1, '1', pos = (64,103), size =(60,-1), min=1, max=12)
+        self.CardStarsText = wx.StaticText(self, -1, 'Grade:  >=', pos = (12,108))
+        self.CardStarsSpin = wx.SpinCtrl(self, -1, '0', pos = (70,103), size =(60,-1), min=0, max=3)
         self.CardStarsText2 = wx.StaticText(self, -1, 'and <=', pos=(134,108))
-        self.CardStarsSpin2 = wx.SpinCtrl(self, -1, '12', pos=(184,103), size = (60,-1), min=1, max=12)
+        self.CardStarsSpin2 = wx.SpinCtrl(self, -1, '3', pos=(190,103), size = (60,-1), min=0, max=3)
         self.CardStarsSpin.Hide()
         self.CardStarsSpin2.Hide()
         self.CardStarsText.Hide()
         self.CardStarsText2.Hide()
         
         # Atk/Def
-        self.MonsterAtkText = wx.StaticText(self,-1,'Atk: >=',pos=(12,144))
-        self.MonsterAtkSpin = wx.SpinCtrl(self, -1, '0',pos=(64,139),size=(60,-1),min=0,max=5000)
+        self.MonsterAtkText = wx.StaticText(self,-1,'Power: >=',pos=(12,144))
+        self.MonsterAtkSpin = wx.SpinCtrl(self, -1, '0',pos=(70,139),size=(60,-1),min=0,max=20000)
         self.MonsterAtkText2 = wx.StaticText(self,-1,'and <=',pos=(134,144))
-        self.MonsterAtkSpin2 = wx.SpinCtrl(self,-1,'5000',pos=(184,139),size=(60,-1),min=0,max=5000)
+        self.MonsterAtkSpin2 = wx.SpinCtrl(self,-1,'20000',pos=(190,139),size=(60,-1),min=0,max=20000)
         self.MonsterAtkSpin.Hide()
         self.MonsterAtkText.Hide()
         self.MonsterAtkSpin2.Hide()
         self.MonsterAtkText2.Hide()
-        
-        self.MonsterDefText = wx.StaticText(self,-1,'Def: >=',pos=(12,180))
-        self.MonsterDefSpin = wx.SpinCtrl(self, -1,'0',pos =(64,175), size = (60,-1),min=0,max=5000)
-        self.MonsterDefText2 = wx.StaticText(self,-1,'and <=',pos=(134,180))
-        self.MonsterDefSpin2 = wx.SpinCtrl(self, -1,'5000',pos =(184,175), size = (60,-1),min=0,max=5000)
-        self.MonsterDefSpin.Hide()
-        self.MonsterDefText.Hide()
-        self.MonsterDefSpin2.Hide()
-        self.MonsterDefText2.Hide()
         
         # Effetto
         self.CardEffect = wx.TextCtrl(self,-1, pos=(24,208),size=(352,100),style = wx.TE_MULTILINE)
@@ -266,9 +257,9 @@ class AdvancedSearch(wx.Dialog):
 
     def OnCardTypeChoice(self, event):
         c = self.CardTypeChoice.GetStringSelection()
-        if (c=='Monster'):
+        if (c=='Unit'):
             self.CardSubTypeChoice.Clear()
-            self.CardSubTypeChoice.AppendItems(['Any','Normal','Effect','Fusion','Ritual','Synchro','Toon','Tuner','Gemini','Union'])
+            self.CardSubTypeChoice.AppendItems(['Any','Normal Unit','Trigger Unit'])
             self.CardSubTypeChoice.SetStringSelection('Any')
             self.CardSubTypeText.Show()
             self.CardSubTypeChoice.Show()
@@ -282,56 +273,8 @@ class AdvancedSearch(wx.Dialog):
             self.MonsterAtkText.Show()
             self.MonsterAtkSpin2.Show()
             self.MonsterAtkText2.Show()
-            self.MonsterDefSpin.Show()
-            self.MonsterDefText.Show()
-            self.MonsterDefSpin2.Show()
-            self.MonsterDefText2.Show()
             self.CardType2Text.Show()
             self.CardType2Choice.Show()
-        elif (c == 'Spell'):
-            self.CardSubTypeChoice.Clear()
-            self.CardSubTypeChoice.AppendItems(['Any','','Continuous','Quick-Play','Equip','Field'])
-            self.CardSubTypeChoice.SetStringSelection('Any')
-            self.CardSubTypeText.Show()
-            self.CardSubTypeChoice.Show()
-            self.CardAttributeChoice.Hide()
-            self.CardAttributeText.Hide()
-            self.CardStarsSpin.Hide()
-            self.CardStarsText.Hide()
-            self.CardStarsSpin2.Hide()
-            self.CardStarsText2.Hide()
-            self.MonsterAtkSpin.Hide()
-            self.MonsterAtkText.Hide()
-            self.MonsterAtkSpin2.Hide()
-            self.MonsterAtkText2.Hide()
-            self.MonsterDefSpin.Hide()
-            self.MonsterDefText.Hide()
-            self.MonsterDefSpin2.Hide()
-            self.MonsterDefText2.Hide()
-            self.CardType2Text.Hide()
-            self.CardType2Choice.Hide()
-        elif (c == 'Trap'):
-            self.CardSubTypeChoice.Clear()
-            self.CardSubTypeChoice.AppendItems(['Any','','Continuous','Counter'])
-            self.CardSubTypeChoice.SetStringSelection('Any')
-            self.CardSubTypeText.Show()
-            self.CardSubTypeChoice.Show()
-            self.CardAttributeChoice.Hide()
-            self.CardAttributeText.Hide()
-            self.CardStarsSpin.Hide()
-            self.CardStarsText.Hide()
-            self.CardStarsSpin2.Hide()
-            self.CardStarsText2.Hide()
-            self.MonsterAtkSpin.Hide()
-            self.MonsterAtkText.Hide()
-            self.MonsterAtkSpin2.Hide()
-            self.MonsterAtkText2.Hide()
-            self.MonsterDefSpin.Hide()
-            self.MonsterDefText.Hide()
-            self.MonsterDefSpin2.Hide()
-            self.MonsterDefText2.Hide()
-            self.CardType2Text.Hide()
-            self.CardType2Choice.Hide()
         else:
             self.CardSubTypeChoice.Hide()
             self.CardSubTypeText.Hide()
@@ -345,10 +288,6 @@ class AdvancedSearch(wx.Dialog):
             self.MonsterAtkText.Hide()
             self.MonsterAtkSpin2.Hide()
             self.MonsterAtkText2.Hide()
-            self.MonsterDefSpin.Hide()
-            self.MonsterDefText.Hide()
-            self.MonsterDefSpin2.Hide()
-            self.MonsterDefText2.Hide()
             self.CardType2Text.Hide()
             self.CardType2Choice.Hide()
 
@@ -362,8 +301,6 @@ class AdvancedSearch(wx.Dialog):
         self.CardStarsSpin2.SetValue(5000)
         self.MonsterAtkSpin.SetValue(0)
         self.MonsterAtkSpin2.SetValue(5000)
-        self.MonsterDefSpin.SetValue(0)
-        self.MonsterDefSpin2.SetValue(5000)
         self.OnCardTypeChoice(event)
     
     def OnGetAllValue(self, event):
@@ -372,18 +309,14 @@ class AdvancedSearch(wx.Dialog):
         li.append(self.CardEffect.GetValue())
         type = self.CardTypeChoice.GetStringSelection()
         li.append(type)
-        if (type == "Monster"):
+        if (type == "Unit"):
             li.append(self.CardSubTypeChoice.GetStringSelection())
             li.append(self.CardAttributeChoice.GetStringSelection())
             li.append(self.CardStarsSpin.GetValue())
             li.append(self.CardStarsSpin2.GetValue())
             li.append(self.MonsterAtkSpin.GetValue())
             li.append(self.MonsterAtkSpin2.GetValue())
-            li.append(self.MonsterDefSpin.GetValue())
-            li.append(self.MonsterDefSpin2.GetValue())
             li.append(self.CardType2Choice.GetStringSelection())
-        elif (type == "Spell" or type == "Trap"):
-            li.append(self.CardSubTypeChoice.GetStringSelection())
         cards = self._frame.Engine.AdvancedSearch(li)
         self._frame.CardListCtrl.DeleteAllItems()
         n=0

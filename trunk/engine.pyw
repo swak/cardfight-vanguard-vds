@@ -229,56 +229,35 @@ class Engine():
         if li[2] == 'Any':
             return se
         # Monster
-        elif li[2] == 'Monster':
+        elif li[2] == 'Unit':
             s1 = []
             for c in se:
                 if not c.IsMonster():
                     continue
                 if li[3] == 'Any':
                     s1.append(c)
-                elif li[3] == 'Normal':
-                    if not c.Class.count('Effect'):
+                elif li[3] == 'Normal Unit':
+                    if not c.Class.count('Trigger Unit'):
                         s1.append(c)
-                elif li[3] == 'Effect':
-                    if c.Class.count('Effect'):
-                        s1.append(c)
-                elif li[3] == 'Fusion':
-                    if c.Class.count('Fusion'):
-                        s1.append(c)
-                elif li[3] == 'Synchro':
-                    if c.Class.count('Synchro'):
-                        s1.append(c)    
-                elif li[3] == 'Ritual':
-                    if c.Class.count('Ritual'):
-                        s1.append(c)
-                elif li[3] == 'Toon':
-                    if c.Class.count('Toon'):
-                        s1.append(c)
-                elif li[3] == 'Tuner':
-                    if c.Class.count('Tuner'):
-                        s1.append(c)
-                elif li[3] == 'Gemini':
-                    if c.Class.count('Gemini'):
-                        s1.append(c)
-                elif li[3] == 'Union':
-                    if c.Class.count('Union'):
+                elif li[3] == 'Trigger Unit':
+                    if c.Class.count('Trigger Unit'):
                         s1.append(c)
             s2 = []
             if li[4] == 'Any':
                 s2 = s1
             else:
                 for c in s1:
-                    if li[4] == c.Clan:
+                    if li[4] == c.Race:
                         s2.append(c)
             s3 = []
-            if li[5] == '1' and li[6] == '12':
+            if li[5] == '1' and li[6] == '3':
                 s3 = s2
             else:
                 for c in s2:
                     if int(c.Grade) >= int(li[5]) and int(c.Grade) <= int(li[6]):
                         s3.append(c)
             s4 = []
-            if li[7] == '0' and li[8] == '5000':
+            if li[7] == '0' and li[8] == '20000':
                 s4 = s3
             else:
                 for c in s3:
@@ -287,40 +266,13 @@ class Engine():
                     if int(c.Power) >= int(li[7]) and int(c.Power) <= int(li[8]):
                         s4.append(c)
             s5 = []
-            if li[9] == '0' and li[10] == '5000':
+            if li[9] == 'Any':
                 s5 = s4
             else:
                 for c in s4:
-                    if c.Shield.count('?') or c.Shield.count('x') or c.Shield.count('X'):
-                        continue
-                    if int(c.Shield) >= int(li[9]) and int(c.Shield) <= int(li[10]):
+                    if c.Clan.count(li[9]):
                         s5.append(c)
-            s6 = []
-            if li[11] == 'Any':
-                s6 = s5
-            else:
-                for c in s5:
-                    if c.Class.count(li[11]):
-                        s6.append(c)
-            return s6
-        # Spell
-        elif li[2] == 'Spell':
-            s1 = []
-            for c in se:
-                if li[3] == 'Any' and c.IsSpell():
-                    s1.append(c)
-                elif li[3] == c.Race and c.IsSpell():
-                    s1.append(c)
-            return s1
-        # Clan
-        elif li[2] == 'Trap':
-            s1 = []
-            for c in se:
-                if li[3] == 'Any' and c.IsTrap():
-                    s1.append(c)
-                elif li[3] == c.Race and c.IsTrap():
-                    s1.append(c)
-            return s1
+            return s5
 
     def GetAllCards(self):
         
