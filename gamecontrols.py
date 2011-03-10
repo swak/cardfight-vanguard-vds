@@ -129,7 +129,7 @@ class GamePanel(wx.Panel):
         self.Parent.Bind(wx.EVT_MENU, self.OnPopupDeckSearch, item)
         item.SetBitmap(self._engine.GetSkinImage('Searchdeck'))
         self._menuactions.AppendItem(item)
-        item = wx.MenuItem(self._menuactions,-1,self._engine.GetLangString("Opponent's Drop ZOne"))
+        item = wx.MenuItem(self._menuactions,-1,self._engine.GetLangString("Opponent's Drop Zone"))
         item.SetBitmap(self._engine.GetSkinImage('Tograve'))
         self.Parent.Bind(wx.EVT_MENU, self.OnOpponentGraveLClick, item)
         self._menuactions.AppendItem(item)
@@ -705,7 +705,7 @@ class GamePanel(wx.Panel):
         card.SetPosition(self.PositionCard(card, x, y))
         card.Hide()
         card.Show()
-        self.WriteGameMessage(self._engine.GetLangString('gurads with ') + card.GetCardName(), CHAT_OPPONENT)
+        self.WriteGameMessage(self._engine.GetLangString('guards with ') + card.GetCardName(), CHAT_OPPONENT)
 
     def OnCardFieldPopup(self, c):
         menu = wx.Menu()
@@ -3293,7 +3293,16 @@ class CardControl(GameObject, wx.DataObjectSimple):
         font = wx.Font(pointSize=8,family=wx.FONTFAMILY_DEFAULT,style=wx.FONTSTYLE_NORMAL,weight=wx.FONTWEIGHT_NORMAL, faceName="Tahoma")
         font.SetNoAntiAliasing(True)
         dc.SetFont(font)
+        name = self.GetCardName()
         p = self.GetCardPosition()
+        if p == 2 or p == 3 or p == 4 or p == 5 or p == 6:
+            name = name[:26]
+            nx = 2
+            ny = 1
+            sx = 10
+            sy = 10
+            dc.SetTextForeground(wx.BLACK)
+            dc.DrawText(name, nx, ny)
         if self.IsTarget():
             tbmp = self._engine.GetSkinImage('Target')
             if self.IsVertical():
@@ -3501,7 +3510,16 @@ class OpponentCardControl(GameObject):
         font = wx.Font(pointSize=8,family=wx.FONTFAMILY_DEFAULT,style=wx.FONTSTYLE_NORMAL,weight=wx.FONTWEIGHT_NORMAL, faceName="Tahoma")
         font.SetNoAntiAliasing(True)
         dc.SetFont(font)
-        p = self.GetCardPosition()        
+        name = self.GetCardName()
+        p = self.GetCardPosition()
+        if p == 9 or p == 10 or p == 11 or p == 12 or p == 13:
+            name = name[:26]
+            nx = 2
+            ny = 1
+            sx = 10
+            sy = 10
+            dc.SetTextForeground(wx.BLACK)
+            dc.DrawText(name, nx, ny)
         if self.IsTarget():
             tbmp = self._engine.GetSkinImage('Target')
             if self.IsVertical():

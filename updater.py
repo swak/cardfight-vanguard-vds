@@ -19,7 +19,7 @@
 import urllib, os, md5, sys, wx
 from xml.dom import minidom
 
-updateserver = 'http://jproject.xz.lt/vanguard/updates'
+updateserver = 'http://jproject.xz.lt/vanguard/updates/'
 
 def CheckUpdate(dir):
     try:
