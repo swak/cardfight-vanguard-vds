@@ -68,12 +68,14 @@ class MainFrame(wx.Frame):
         self.hmbox8 = wx.BoxSizer(wx.HORIZONTAL) # *
         self.hmbox9 = wx.BoxSizer(wx.HORIZONTAL) # *
         self.hmbox10 = wx.BoxSizer(wx.HORIZONTAL) # *
-        self.hmbox11 = wx.BoxSizer(wx.HORIZONTAL) # *
+        self.hmbox11 = wx.BoxSizer(wx.VERTICAL) # *
         self.hvbox1 = wx.BoxSizer(wx.HORIZONTAL)
-        self.Bind(wx.EVT_SHOW, self.OnUpdate)
+        #self.Bind(wx.EVT_SHOW, self.OnUpdate)
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         # Menu
-        self.Menu = wx.MenuBar() 
+        self.Menu = wx.MenuBar()
+        
+        self.CardCount = wx.StaticText(self.panel, -1, 'Cards Total: 0')
         
         # Status Bar
         self.StatusBar = wx.StatusBar(self,-1) 
@@ -98,18 +100,20 @@ class MainFrame(wx.Frame):
             idx = self.CardListCtrl.InsertStringItem(n, c.Name)
             self.CardListCtrl.SetStringItem(idx, 1, c.CardID)
             n += 1
-        self.CardListCtrl.SetColumnWidth(0, 250) 
+        self.CardCount.SetLabel('Cards Total: ' + str(n))
+        self.CardListCtrl.SetColumnWidth(0, 175) 
         self.CardListCtrl.SetColumnWidth(1, 0) 
         self.CardListCtrl.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnCardSelected)
         self.CardListCtrl.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.OnCardListItemRClick)
         self.CardListCtrl.Bind(wx.EVT_LEFT_DCLICK, self.OnAddCard)
         # End CardList Control
         
+
         
         self.MonsterHeaderText = wx.StaticText(self.panel, -1, 'Normal Units: 0')
         self.MonsterListCtrl = wx.ListCtrl(self.panel, -1, style = wx.LC_REPORT | wx.LC_SINGLE_SEL | wx.LC_NO_HEADER | wx.LC_HRULES)
         self.MonsterListCtrl.InsertColumn(0, 'Normal Units')
-        self.MonsterListCtrl.SetColumnWidth(0, 200)
+        self.MonsterListCtrl.SetColumnWidth(0, 175)
         self.MonsterListCtrl.InsertColumn(1, 'CardID')
         self.MonsterListCtrl.SetColumnWidth(1, 0)
         self.MonsterListCtrl.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnMonsterCardSelected)
@@ -119,7 +123,7 @@ class MainFrame(wx.Frame):
         self.TriggerHeaderText = wx.StaticText(self.panel, -1, 'Trigger Units: 0')
         self.TriggerListCtrl = wx.ListCtrl(self.panel, -1, style = wx.LC_REPORT |  wx.LC_SINGLE_SEL | wx.LC_NO_HEADER | wx.LC_HRULES)
         self.TriggerListCtrl.InsertColumn(0, 'Trigger Units')
-        self.TriggerListCtrl.SetColumnWidth(0, 200)
+        self.TriggerListCtrl.SetColumnWidth(0, 175)
         self.TriggerListCtrl.InsertColumn(1, 'CardID')
         self.TriggerListCtrl.SetColumnWidth(1, 0)
         self.TriggerListCtrl.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnTriggerCardSelected)
@@ -127,6 +131,16 @@ class MainFrame(wx.Frame):
         self.TriggerListCtrl.Bind(wx.EVT_LEFT_DCLICK, self.OnRemoveCard)
         
         self.DeckCountText = wx.StaticText(self.panel, -1, 'Deck: 0')
+        
+        self.G0CountText = wx.StaticText(self.panel, -1, 'G0: 0')
+        self.G1CountText = wx.StaticText(self.panel, -1, 'G1: 0')
+        self.G2CountText = wx.StaticText(self.panel, -1, 'G2: 0')
+        self.G3CountText = wx.StaticText(self.panel, -1, 'G3: 0')
+        
+        self.HTCountText = wx.StaticText(self.panel, -1, 'HT: 0')
+        self.STCountText = wx.StaticText(self.panel, -1, 'ST: 0')
+        self.CTCountText = wx.StaticText(self.panel, -1, 'CT: 0')
+        self.DTCountText = wx.StaticText(self.panel, -1, 'DT: 0')
         
         #Monsterlist Popup
         self.MonsterListPopupMenu = wx.Menu()
@@ -143,8 +157,8 @@ class MainFrame(wx.Frame):
         self.TriggerListPopupMenu.AppendItem(item)
         
         self.CardNameCtrl = wx.StaticText(self.panel, -1, style=wx.ALIGN_CENTRE)
-        self.CardImageCtrl = wx.StaticBitmap(self.panel, -1, size=(300,420))
-        self.CardDescriptionCtrl = wx.TextCtrl(self.panel, -1,size=(300,150), style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_CENTRE)
+        self.CardImageCtrl = wx.StaticBitmap(self.panel, -1, size=(165,240))
+        self.CardDescriptionCtrl = wx.TextCtrl(self.panel, -1,size=(330,140), style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_BESTWRAP)
         # End
         
         self.BuildUI()
@@ -154,8 +168,9 @@ class MainFrame(wx.Frame):
         self.vbox1.Add(self.hvbox1, 0, wx.ALL | wx.EXPAND, 2) # Aggiungo il CardSearchCtrl al vbox1 (control,proprortions,styles,margins)
         self.hvbox1.Add(self.CardSearchCtrl, 1, wx.ALL | wx.EXPAND, 2) # Aggiungo il CardSearchCtrl al vbox1 (control,proprortions,styles,margins)
         self.hvbox1.Add(self.CardReloadCtrl, 0, wx.ALL | wx.EXPAND, 2)
-        self.vbox1.Add(self.CardListCtrl, 1, wx.ALL | wx.EXPAND, 2) # Aggiungo il CardListCtrl al vbox1 (control,proprortions,styles,margins)
-
+        self.vbox1.Add(self.CardListCtrl, 1, wx.ALL | wx.EXPAND, 0) # Aggiungo il CardListCtrl al vbox1 (control,proprortions,styles,margins)
+        self.vbox1.Add(self.CardCount, 0, wx.ALL | wx.EXPAND, 2)
+        
         self.vbox2.Add(self.hmbox1, 0, wx.ALL | wx.EXPAND, 2) # Parte Centrale del Layout
         self.vbox2.Add(self.hmbox2, 1, wx.ALL | wx.EXPAND, 2) # *
         self.vbox3.Add(self.hmbox3, 0, wx.ALL | wx.EXPAND, 2) # *
@@ -168,11 +183,22 @@ class MainFrame(wx.Frame):
         #self.vbox3.Add(self.hmbox10, 1, wx.ALL | wx.EXPAND, 2) # *
         self.vbox4.Add(self.hmbox11, 1, wx.ALL | wx.EXPAND, 2) # *
         self.vbox4.AddSpacer(25,0) # *
+        self.vbox4.AddSpacer(25,0) # *
+        self.vbox4.AddSpacer(25,0) # *
         self.hmbox1.Add(self.MonsterHeaderText, 1, wx.ALL | wx.EXPAND, 2) # *
         self.hmbox2.Add(self.MonsterListCtrl, 1, wx.ALL | wx.EXPAND, 2) # *
         self.hmbox3.Add(self.TriggerHeaderText, 1, wx.ALL | wx.EXPAND, 2) # *
         self.hmbox4.Add(self.TriggerListCtrl, 1, wx.ALL | wx.EXPAND, 2) # *
-        self.hmbox11.Add(self.DeckCountText, 1, wx.ALL | wx.EXPAND, 2) # *
+        self.hmbox11.Add(self.DeckCountText, 0, wx.ALL | wx.EXPAND, 2) # *
+        self.hmbox11.Add(self.G0CountText, 0, wx.ALL | wx.EXPAND, 2) # *
+        self.hmbox11.Add(self.G1CountText, 0, wx.ALL | wx.EXPAND, 2) # *
+        self.hmbox11.Add(self.G2CountText, 0, wx.ALL | wx.EXPAND, 2) # *
+        self.hmbox11.Add(self.G3CountText, 0, wx.ALL | wx.EXPAND, 2) # *
+        
+        self.hmbox11.Add(self.HTCountText, 0, wx.ALL | wx.EXPAND, 2) # *
+        self.hmbox11.Add(self.STCountText, 0, wx.ALL | wx.EXPAND, 2) # *
+        self.hmbox11.Add(self.CTCountText, 0, wx.ALL | wx.EXPAND, 2) # *
+        self.hmbox11.Add(self.DTCountText, 0, wx.ALL | wx.EXPAND, 2) # *
 
         self.vbox5.Add(self.CardNameCtrl, 0, wx.ALL | wx.ALIGN_CENTER , 4)
         self.vbox5.Add(self.CardImageCtrl, 0, wx.ALL | wx.ALIGN_CENTER, 4)
@@ -302,7 +328,7 @@ class MainFrame(wx.Frame):
         self.toolbar.AddLabelTool(ID_SAVEAS, 'Save As...', self.Engine.GetSkinImage('SaveAs'), shortHelp = self.Engine.GetLangString('Save As...'), longHelp = self.Engine.GetLangString('Save current deck to a new path'))
         self.toolbar.AddLabelTool(ID_PRINT, 'Print', self.Engine.GetSkinImage('Print'), shortHelp = self.Engine.GetLangString('Print'), longHelp = self.Engine.GetLangString('Print current deck'))
         self.toolbar.AddSeparator()
-        #self.toolbar.AddLabelTool(ID_ADVANCED, 'Advanced Search', self.Engine.GetSkinImage('Find'), shortHelp = self.Engine.GetLangString('Advanced Search'), longHelp = self.Engine.GetLangString('Open the Advanced Search Form'))
+        self.toolbar.AddLabelTool(ID_ADVANCED, 'Advanced Search', self.Engine.GetSkinImage('Find'), shortHelp = self.Engine.GetLangString('Advanced Search'), longHelp = self.Engine.GetLangString('Open the Advanced Search Form'))
         self.toolbar.Realize()
         # End ToolBar
         
@@ -340,6 +366,23 @@ class MainFrame(wx.Frame):
         self.MonsterHeaderText.SetLabel('Normal Units: ' + str(self.MonsterListCtrl.GetItemCount()))
         self.TriggerHeaderText.SetLabel('Trigger Units: ' + str(self.TriggerListCtrl.GetItemCount()))
         self.DeckCountText.SetLabel('Deck: %s' % str(self.MonsterListCtrl.GetItemCount()+self.TriggerListCtrl.GetItemCount()))
+        g0 = self.Engine.Deck.GetG0()
+        self.G0CountText.SetLabel('G0: %s' % str(g0))
+        g1 = self.Engine.Deck.GetG1()
+        self.G1CountText.SetLabel('G1: %s' % str(g1))
+        g2 = self.Engine.Deck.GetG2()
+        self.G2CountText.SetLabel('G2: %s' % str(g2))
+        g3 = self.Engine.Deck.GetG3()
+        self.G3CountText.SetLabel('G3: %s' % str(g3))
+        
+        ht = self.Engine.Deck.CheckHT2()
+        self.HTCountText.SetLabel('HT: %s' % str(ht))
+        st = self.Engine.Deck.CheckST()
+        self.STCountText.SetLabel('ST: %s' % str(st))
+        ct = self.Engine.Deck.CheckCT()
+        self.CTCountText.SetLabel('CT: %s' % str(ct))
+        dt = self.Engine.Deck.CheckDT()
+        self.DTCountText.SetLabel('DT: %s' % str(dt))
 
     def ShowDialog(self, message, title, style, parent=None):
         if parent == None:
@@ -348,18 +391,31 @@ class MainFrame(wx.Frame):
         return dialog.ShowModal()
     
     def OnConnectMenu(self, event):
-        self.Engine.GameFrame = gameframe.GameFrame(self.Engine)
-        self.Engine.Game = self.Engine.GameFrame.Game
-        self.Engine.Network = network.Network(self.Engine.Game)
-        dialog = dialogs.ConnectionDialog(self)
-        dialog.ShowModal()
+        tu = self.TriggerListCtrl.GetItemCount()
+        nu = self.MonsterListCtrl.GetItemCount()
+        if tu !=16 or nu !=34:
+            self.ShowDialog('Your deck is not ready!', '', wx.OK | wx.ICON_ERROR, self)
+            self.OkButton.Enable()
+        else:
+            self.Engine.GameFrame = gameframe.GameFrame(self.Engine)
+            self.Engine.Game = self.Engine.GameFrame.Game
+            self.Engine.Network = network.Network(self.Engine.Game)
+            dialog = dialogs.ConnectionDialog(self)
+            dialog.ShowModal()
+
     
     def OnListenMenu(self, event):
-        self.Engine.GameFrame = gameframe.GameFrame(self.Engine)
-        self.Engine.Game = self.Engine.GameFrame.Game
-        self.Engine.Network = network.Network(self.Engine.Game)
-        dialog = dialogs.ListenDialog(self)
-        dialog.ShowModal()
+        tu = self.TriggerListCtrl.GetItemCount()
+        nu = self.MonsterListCtrl.GetItemCount()
+        if tu !=16 or nu !=34:
+            self.ShowDialog('Your deck is not ready!', '', wx.OK | wx.ICON_ERROR, self)
+            self.OkButton.Enable()
+        else:
+            self.Engine.GameFrame = gameframe.GameFrame(self.Engine)
+            self.Engine.Game = self.Engine.GameFrame.Game
+            self.Engine.Network = network.Network(self.Engine.Game)
+            dialog = dialogs.ListenDialog(self)
+            dialog.ShowModal()
 
     def OnPlayMenu(self, event):
         self.Engine.GameFrame = gameframe.GameFrame(self.Engine)
@@ -370,13 +426,19 @@ class MainFrame(wx.Frame):
         self.Engine.GameFrame.Show()
 
     def OnRoomsMenu(self, event):
-        self.Engine.GameFrame = gameframe.GameFrame(self.Engine)
-        self.Engine.Game = self.Engine.GameFrame.Game
-        self.Engine.Network = network.Network(self.Engine.Game)
-        dialog = room.Login(self)
-        dialog.ShowModal()
-        try: dialog.EndTimer()
-        except: pass 
+        tu = self.TriggerListCtrl.GetItemCount()
+        nu = self.MonsterListCtrl.GetItemCount()
+        if tu !=16 or nu !=34:
+            self.ShowDialog('Your deck is not ready!', '', wx.OK | wx.ICON_ERROR, self)
+            self.OkButton.Enable()
+        else:
+            self.Engine.GameFrame = gameframe.GameFrame(self.Engine)
+            self.Engine.Game = self.Engine.GameFrame.Game
+            self.Engine.Network = network.Network(self.Engine.Game)
+            dialog = room.Login(self)
+            dialog.ShowModal()
+            try: dialog.EndTimer()
+            except: pass 
     
     def OnAdvancedSearchMenu(self, event):
         self.AdvancedSearchFrame.Show()
@@ -436,20 +498,22 @@ class MainFrame(wx.Frame):
         self.CardNameCtrl.SetLabel(card.Name)
         self.CardImageCtrl.SetBitmap(self.Engine.GetBigCardImage(card))
         desc = card.Class + '/'
-        desc +=  card.Race + '/'
-        desc += card.Clan + '\n'
+        desc +=  card.Nation + '/'
+        desc += card.Clan + '/'
+        desc +=  card.Race + '\n'
         desc += 'GRADE:' + card.Grade + '\n'
         if card.Skill != '':
             desc += 'SKILL: ' + card.Skill + '\n'
         if card.Class == 'Trigger Unit':
             desc += 'TRIGGER: ' + card.Trigger + '\n'
-        desc += 'POWER:' + card.Power + ' CRITICAL:' + card.Critical +' SHIELD:' + card.Shield + '\n' + card.CardID + '\n'
+        desc += 'POWER:' + card.Power + ' CRITICAL:' + card.Critical +' SHIELD:' + card.Shield + '\n'
         if card.Effect != '':
             desc +=  '\n' + card.Effect + '\n'
         if card.Illustrator != '?' and card.Illustrator != '':
             desc += '\n' + 'Illustrator: ' + card.Illustrator
         if card.Text != '?' and card.Text != '':
-            desc += '\n' + 'Card text: ' + card.Text + '\n'   
+            desc += '\n' + 'Card text: ' + card.Text + '\n'
+        desc += '\n'+card.CardID + '\n'
         self.CardDescriptionCtrl.SetValue(desc)
         self.panel.SendSizeEvent()
 
@@ -457,7 +521,15 @@ class MainFrame(wx.Frame):
         if self.SelectedFromDeck == '':
             return
         c = self.Engine.FindCardByCardID(self.SelectedFromDeck)
-        self.Engine.Deck.Add(c)
+        cc = self.Engine.Deck.CheckCard(self.SelectedFromDeck)
+        ht = self.Engine.Deck.CheckHT(self.SelectedFromDeck)
+        #ct = self.Engine.Deck.CheckTrigers(self.SelectedFromDeck)
+        if cc < 4:
+            if c.Trigger == '+5000 Power, Heal':
+                if ht < 4:
+                    self.Engine.Deck.Add(c)
+            else:
+                self.Engine.Deck.Add(c)
         self.RefreshCardList()
 
     def OnRemoveCard(self, event):
@@ -533,7 +605,7 @@ class MainFrame(wx.Frame):
 
     def OnWeb(self, event=None):
         try:
-            webbrowser.open_new_tab('http://jproject.xz.lt/vanguard')
+            webbrowser.open_new_tab('http://vanguard.jproject.xz.lt/')
         except: pass
 
     def OnSettings(self, event=None):
@@ -564,6 +636,7 @@ class MainFrame(wx.Frame):
         info = wx.AboutDialogInfo()
         info.SetName(self.Engine.GetName())
         info.SetWebSite('http://code.google.com/p/cardfight-vanguard-vds/')
+        info.SetWebSite('http://vanguard.jproject.xz.lt')
         info.SetVersion(self.Engine.GetVersion())
         info.SetDescription('CRAY ONLINE is a multi-platform Cardfight!! Vanguard Dueling and Deck Building application written in Python and using wxPython as GUI Library.')
         info.SetLicense("""CRAY ONLINE is free software; you can redistribute it and/or modify it 
@@ -575,6 +648,6 @@ without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 See the GNU General Public License for more details. You should have received a copy of 
 the GNU General Public License along with J_PROJECT; if not, write to 
 the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA""")
-        info.AddDeveloper("J_BYYX")
-        info.AddArtist("J_BYYX")
+        info.AddDeveloper("J_BYYX (code, database, images), FelGrand (database)")
+        info.AddArtist("J_BYYX, Jovan Dmitrović")
         wx.AboutBox(info)

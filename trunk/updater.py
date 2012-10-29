@@ -93,7 +93,7 @@ class UpdateDialog(wx.ProgressDialog):
             toupdate = CheckUpdate(self._engine.BaseDirectory)
             if self._engine.Frame.ShowDialog(self._engine.GetLangString('An update is avaible, would you like to update now?'),'',wx.YES_NO | wx.ICON_QUESTION | wx.YES_DEFAULT, parent=self) == wx.ID_YES:
                 self.DoUpdate(toupdate)
-                self._engine.Frame.ShowDialog(self._engine.GetLangString('Now you can restart the application.'),'',wx.OK | wx.ICON_INFORMATION, parent=self)
+                self._engine.Frame.ShowDialog(self._engine.GetLangString('Update Downloaded. Check your Cray Online folder for "update.zip" and extract it.'),'',wx.OK | wx.ICON_INFORMATION, parent=self)
                 sys.exit()
         else:
             self._engine.Frame.ShowDialog(self._engine.GetLangString('No update needed.'), '', wx.OK | wx.ICON_INFORMATION, parent=self)

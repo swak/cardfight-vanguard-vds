@@ -59,11 +59,9 @@ class DeckPrinter(wx.Printout):
 #TO DO: Change structure to fit CFV decks
     def OnPrintPage(self, page):
         monsters = self.Deck.GetMonsters()
-        spells = self.Deck.GetSpells()
-        traps = self.Deck.GetTraps()
-        fusions = self.Deck.GetFusions()
-        side = self.Deck.GetSide()
-        maindeckcount = len(monsters) + len(spells) + len(traps)
+        triggers = self.Deck.GetTrigger()
+
+        maindeckcount = len(monsters) + len(triggers)
 
         dc = self.GetDC()
 
@@ -73,7 +71,7 @@ class DeckPrinter(wx.Printout):
         self.NewLine()
 
         dc.SetFont(self.FirstFont)
-        dc.DrawText('Monsters: ' + str(len(monsters)), self.CurrentX, self.CurrentY)
+        dc.DrawText('Normal Units: ' + str(len(monsters)), self.CurrentX, self.CurrentY)
         self.NewLine()
         dc.SetFont(self.SecondFont)
         for c in monsters:
@@ -82,40 +80,10 @@ class DeckPrinter(wx.Printout):
 
         self.NewLine()
         dc.SetFont(self.FirstFont)
-        dc.DrawText('Spells: ' + str(len(spells)), self.CurrentX, self.CurrentY)
+        dc.DrawText('Trigger Units: ' + str(len(triggers)), self.CurrentX, self.CurrentY)
         self.NewLine()
         dc.SetFont(self.SecondFont)
-        for c in spells:
-            dc.DrawText(c.Name, self.CurrentX, self.CurrentY)
-            self.NewLine()
-
-        self.NewLine()
-        dc.SetFont(self.FirstFont)
-        dc.DrawText('Traps: ' + str(len(traps)), self.CurrentX, self.CurrentY)
-        self.NewLine()
-        dc.SetFont(self.SecondFont)
-        for c in traps:
-            dc.DrawText(c.Name, self.CurrentX, self.CurrentY)
-            self.NewLine()
-
-        self.AddHSpace(1200)
-        self.CurrentY = self.StartY
-        self.AddVSpace(80)
-        self.NewLine()
-        dc.SetFont(self.FirstFont)
-        dc.DrawText('Side Deck: ' + str(len(side)), self.CurrentX, self.CurrentY)
-        self.NewLine()
-        dc.SetFont(self.SecondFont)
-        for c in side:
-            dc.DrawText(c.Name, self.CurrentX, self.CurrentY)
-            self.NewLine()
-
-        self.NewLine()
-        dc.SetFont(self.FirstFont)
-        dc.DrawText('Fusion/Extra Deck: ' + str(len(fusions)), self.CurrentX, self.CurrentY)
-        self.NewLine()
-        dc.SetFont(self.SecondFont)
-        for c in fusions:
+        for c in triggers:
             dc.DrawText(c.Name, self.CurrentX, self.CurrentY)
             self.NewLine()
 

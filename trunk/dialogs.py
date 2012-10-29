@@ -102,6 +102,7 @@ class ConnectionDialog(wx.Dialog):
     def OnConnectionError(self, event):
         self.Frame.ShowDialog('Connection Error', '', wx.OK | wx.ICON_ERROR, self)
         self.OkButton.Enable()
+
     
     def GetValues(self):
         vars = []
@@ -208,14 +209,16 @@ class AdvancedSearch(wx.Dialog):
         self.CardSubTypeChoice.Hide()
         
         # Type2
-        li = ['Any','Heat Haze','Megacolony','Nova Grappler','Nubatama','Oracle Think Tank','Royal Paladin','Spark Brothers','Tachikaze']
+        li = ['Any','Angel Feather','Aqua Force','Bermuda Triangle','Dark Irregulars','Dimension Police','Etranger','Gold Paladin','Granblue','Great Nature','Kagero','Megacolony','Murakumo','Narukami','Neo Nectar','Nova Grappler','Nubatama',
+              'Oracle Think Tank','Pale Moon','Royal Paladin','Shadow Paladin','Spike Brothers','Tachikaze']
         self.CardType2Text = wx.StaticText(self, -1, 'Clan: ', pos = (12, 74))
         self.CardType2Text.Hide()
         self.CardType2Choice = wx.Choice(self, -1, pos=(90,69), size=(80,-1), choices=li)
         self.CardType2Choice.Hide()
         
         # Attributo Mostro
-        li = ['Any','Alien','Angel','Cosmo Dragon','Demon','Dino Dragon','Dragonman','Flame Dragon', 'Elf', 'Giant', 'Gilman', 'Gnome', 'Hi-Beast', 'Human', 'Insect', 'Noble', 'Patroid', 'Salamander', 'Sylph', 'War Beast', 'Wing Dragon']
+        li = ['Any','Abyss Dragon','Alien','Angel','Aquaroid','Battleroid','Bioroid','Chimera','Cosmo Dragon','Demon','Dino Dragon','Dragonman','Dryad','Elf','Flame Dragon','Forest Dragon','Ghost','Giant','Gillman','Gnome','Goblin','Golem',
+              'High Beast','Human','Insect','Kraken','Mermaid','Noble','Ogre','Salamander','Shadow Dragon','Sylph','Skeleton','Succubus','Tear Dragon','Thunder Dragon','Vampire','Warbeast','Winged Dragon','Workeroid','Zombie']
         self.CardAttributeText = wx.StaticText(self, -1, 'Race: ', pos = (180, 74))
         self.CardAttributeChoice = wx.Choice(self, -1, pos = (248,69), size=(80,-1), choices = li)
         self.CardAttributeChoice.SetStringSelection('Any')
@@ -373,7 +376,7 @@ class SettingsDialog(wx.Dialog):
         else:
             self.OpenLastDeckChoice.SetValue(True)
 
-        self.ShowFaceUpCardNameText = wx.StaticText(self, -1, "Face-Up Cards Name:")
+        self.ShowFaceUpCardNameText = wx.StaticText(self, -1, "Full Screen:")
         self.ShowFaceUpCardNameChoice = wx.CheckBox(self, -1, label='', style=wx.ALIGN_RIGHT)
         if self.Frame.Engine.GetSetting('ShowFaceUpCardName') == 'No':
             self.ShowFaceUpCardNameChoice.SetValue(False)
