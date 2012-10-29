@@ -18,7 +18,7 @@
 
 class GameCard():
 
-    def __init__(self,cardID,name,uclass,trigger,grade,skillicon,power,critical,shield,clan,race,effect,text,illustrator):
+    def __init__(self,cardID,name,uclass,trigger,grade,skillicon,power,critical,shield,clan,race,effect,text,illustrator,nation):
         self.CardID=cardID
         self.Name=name
         self.Class=uclass
@@ -33,6 +33,7 @@ class GameCard():
         self.Effect=effect
         self.Text=text
         self.Illustrator=illustrator
+        self.Nation=nation
 
     def IsMonster(self):
       return True
@@ -46,4 +47,4 @@ class GameCard():
 
 
     def Duplicate(self):
-        return GameCard(self.CardID,self.Name,self.Class,self.Trigger,self.Grade,self.Skill,self.Power,self.Critical,self.Shield,self.Clan,self.Race,self.Effect,self.Text,self.Illustrator)
+        return GameCard(self.CardID,self.Name,self.Class,self.Trigger,self.Grade,self.Skill,self.Power,self.Critical,self.Shield,self.Clan,self.Race,self.Effect,self.Text,self.Illustrator,self.Nation)

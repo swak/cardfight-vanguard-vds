@@ -72,13 +72,14 @@ class Engine():
         self.Settings = settings.LoadSettings(self.BaseDirectory)
 
         # Update Check
-        '''if self.GetSetting('Update') == 'Yes':
-            toupdate = updater.CheckUpdate(self.BaseDirectory)
-            if len(toupdate) > 0:
-                if wx.MessageDialog(None,'An update is avaible,\nwould you like to update now?','',wx.YES_NO | wx.ICON_QUESTION | wx.YES_DEFAULT).ShowModal() == wx.ID_YES:
-                    updater.Update(self.BaseDirectory,toupdate)
-                    wx.MessageDialog(None,'Now you can restart the application.','',wx.OK | wx.ICON_INFORMATION).ShowModal()
-                    sys.exit()'''
+        if self.GetSetting('Update') == 'Yes':
+            if updater.CheckVersionUpdate(self.GetVersion()):
+                toupdate = updater.CheckUpdate(self.BaseDirectory)
+                if len(toupdate) > 0:
+                    if wx.MessageDialog(None,'An update is avaible,\nwould you like to update now?','',wx.YES_NO | wx.ICON_QUESTION | wx.YES_DEFAULT).ShowModal() == wx.ID_YES:
+                        updater.Update(self.BaseDirectory,toupdate)
+                        wx.MessageDialog(None,'Now you can restart the application.','',wx.OK | wx.ICON_INFORMATION).ShowModal()
+                        sys.exit()
 
         self.Skins = skin.LoadSkins(self.SkinsDirectory) 
         self.Languages = language.LoadLanguages(self.LanguagesDirectory) 
@@ -88,7 +89,7 @@ class Engine():
 
         self.DatabaseCardsCount = len(self.GetAllCards())
         
-        self.Frame = mainform.MainFrame(engine=self, parent=None, title="CRAY ONLINE Deck Construction",size=(1024,720))
+        self.Frame = mainform.MainFrame(engine=self, parent=None, title="CRAY ONLINE Deck Construction",size=(1024,600))
         self.Frame.SetIcon(wx.IconFromLocation(wx.IconLocation(os.path.join(self.BaseDirectory,'J_16x16.ico'))))
         
         if self.GetSetting('OpenLastDeck') == 'Yes':
@@ -108,7 +109,7 @@ class Engine():
         l = self.DownloadImageList()
         m = []
         for c in cards:
-            if not os.path.exists(os.path.join(self.ImagesDirectory, c.Name + '.jpg')):
+            if not os.path.exists(os.path.join(self.ImagesDirectory, c.Name + '.jpg')) and l.count(c.Name + '.jpg') > 0:
                 m.append(c.Name)
         return m
     
@@ -116,9 +117,9 @@ class Engine():
         '''Download missing images'''
         if not self.CheckConnection():
             return 0
-        url = 'http://jproject.xz.lt/vanguard/update/images/%s.jpg' %n
+        url = 'http://jproject.xz.lt/vanguard/updates/images/%s.jpg' % n
         try:
-            urllib.urlretrieve(os.path.join(self.ImagesDirectory,'%s.jpg'%n))
+            urllib.urlretrieve(url, os.path.join(self.ImagesDirectory,'%s.jpg'%n))
             return 1
         except: pass
         return 0
@@ -126,7 +127,7 @@ class Engine():
     def DownloadImageList(self):
         if not self.CheckConnection():
             return ''
-        url = 'http://jproject.xz.lt/vanguard/update/images/'
+        url = 'http://jproject.xz.lt/vanguard/updates/images/'
         s = ''
         try: 
             u = urllib.urlopen(url)
@@ -179,7 +180,7 @@ class Engine():
         c = con.cursor() #Creo un oggetto cursor
         c.execute('SELECT * FROM cards WHERE cardID="'+cardID+'"') #Eseguo la query
         row = c.fetchone() #Ottengo i valori trovati
-        card = gamecard.GameCard(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13]) #Creo la carta
+        card = gamecard.GameCard(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13],row[14]) #Creo la carta
         return card
 
     #Metodo che ritorna una lista di carte data parte del suo nome
@@ -190,7 +191,7 @@ class Engine():
         data = c.fetchall() #Ottengo tutti i valori trovati
         li = list() #Creo la lista che conterra' le carte
         for row in data:
-            card = gamecard.GameCard(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13]) #Creo la carta
+            card = gamecard.GameCard(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13],row[14]) #Creo la carta
             li.append(card) #Aggiungo alla lista ogni carta
         li.sort(lambda x, y: cmp(x.Name, y.Name))
         return li
@@ -200,7 +201,7 @@ class Engine():
         c = con.cursor() #Creo un oggetto cursor
         c.execute('SELECT * FROM cards WHERE name="'+name+'"') #Eseguo la query
         row = c.fetchone() #Ottengo i valori trovati
-        card = gamecard.GameCard(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13]) #Creo la carta
+        card = gamecard.GameCard(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13],row[14]) #Creo la carta
         return card
 
     def FinCardByNameAndExp(self, exp, name):
@@ -282,7 +283,7 @@ class Engine():
         data = c.fetchall() #Ottengo tutti i valori trovati
         li = list() #Creo la lista che conterra' le carte
         for row in data:
-            card = gamecard.GameCard(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13]) #Creo la carta
+            card = gamecard.GameCard(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13],row[14]) #Creo la carta
             li.append(card) #Aggiungo alla lista ogni carta
         li.sort(lambda x, y: cmp(x.Name, y.Name))
         return li
@@ -290,18 +291,11 @@ class Engine():
     def GetCardImage(self, c):
         p = c.GetCardPosition()
         if p == 2 or p == 3 or p == 4 or p == 5 or p == 6 or p == 9 or p == 10 or p == 11 or p == 12 or p == 13:
-            if c.IsTrap():
-                return self.GetSkinImage('TrapList')
-            elif c.IsRitual():
-                return self.GetSkinImage('RitualList')
-            elif c.IsSpell():
-                return self.GetSkinImage('SpellList')
-            elif c.IsSynchro():
-                return self.GetSkinImage('SynchroList')
-            elif c.IsNormalMonster():
-                return self.GetSkinImage('MonsterList')
-            else:
-                return self.GetSkinImage('MonsterEffectList')
+            if not os.path.exists('Images/' + c.GetCardName() + '.jpg'):
+                b = self.ResizeBitmap(self.GetSkinImage('MonsterEffect'), 62, 88)
+                return b
+            img = self.GetImageCardScaled(c.GetCardName())
+            return img
         if c.IsFaceDown():
             bmp = self.GetSkinImage('CardBack')
             if c.IsHorizontal():
@@ -311,21 +305,21 @@ class Engine():
         ty = c.GetCardClass()
         if att != 'Spell' and att != 'Trap':# Scelgo lo sfondo adatto
             if ty.find('Fusion') > -1:
-                b = self.ResizeBitmap(self.GetSkinImage('Fusion'), 60, 88)
+                b = self.ResizeBitmap(self.GetSkinImage('Fusion'), 62, 88)
             elif ty.find('Synchro') > -1:
-                b = self.ResizeBitmap(self.GetSkinImage('Synchro'), 60, 88)              
+                b = self.ResizeBitmap(self.GetSkinImage('Synchro'), 62, 88)              
             elif ty.find('Ritual') > -1:
-                b = self.ResizeBitmap(self.GetSkinImage('Ritual'), 60, 88)
+                b = self.ResizeBitmap(self.GetSkinImage('Ritual'), 62, 88)
             elif ty.find('Token') > -1:
-                b = self.ResizeBitmap(self.GetSkinImage('Token'), 60, 88)
+                b = self.ResizeBitmap(self.GetSkinImage('Token'), 62, 88)
             elif ty.find('Effect') > -1:
-                b = self.ResizeBitmap(self.GetSkinImage('MonsterEffect'), 60, 88)
+                b = self.ResizeBitmap(self.GetSkinImage('MonsterEffect'), 62, 88)
             else:
-                b = self.ResizeBitmap(self.GetSkinImage('Monster'), 60, 88)
+                b = self.ResizeBitmap(self.GetSkinImage('Monster'), 62, 88)
         elif att == 'Trap':
-            b = self.ResizeBitmap(self.GetSkinImage('Trap'), 60, 88)
+            b = self.ResizeBitmap(self.GetSkinImage('Trap'), 62, 88)
         elif att == 'Spell':
-            b = self.ResizeBitmap(self.GetSkinImage('Spell'), 60, 88)
+            b = self.ResizeBitmap(self.GetSkinImage('Spell'), 62, 88)
         bmp = self.GetImageCardScaled(c.GetCardName())
         if not bmp is -1:
             dc = wx.MemoryDC()
@@ -340,21 +334,21 @@ class Engine():
         ty = c.GetCardClass()
         if att != 'Spell' and att != 'Trap':# Scelgo lo sfondo adatto
             if ty.find('Fusion') > -1:
-                b = self.ResizeBitmap(self.GetSkinImage('Fusion'), 60, 88)
+                b = self.ResizeBitmap(self.GetSkinImage('Fusion'), 62, 88)
             elif ty.find('Synchro') > -1:
-                b = self.ResizeBitmap(self.GetSkinImage('Synchro'), 60, 88)     
+                b = self.ResizeBitmap(self.GetSkinImage('Synchro'), 62, 88)     
             elif ty.find('Ritual') > -1:
-                b = self.ResizeBitmap(self.GetSkinImage('Ritual'), 60, 88)
+                b = self.ResizeBitmap(self.GetSkinImage('Ritual'), 62, 88)
             elif ty.find('Token') > -1:
-                b = self.ResizeBitmap(self.GetSkinImage('Token'), 60, 88)
+                b = self.ResizeBitmap(self.GetSkinImage('Token'), 62, 88)
             elif ty.find('Effect') > -1:
-                b = self.ResizeBitmap(self.GetSkinImage('MonsterEffect'), 60, 88)
+                b = self.ResizeBitmap(self.GetSkinImage('MonsterEffect'), 62, 88)
             else:
-                b = self.ResizeBitmap(self.GetSkinImage('Monster'), 60, 88)
+                b = self.ResizeBitmap(self.GetSkinImage('Monster'), 62, 88)
         elif att == 'Trap':
-            b = self.ResizeBitmap(self.GetSkinImage('Trap'), 60, 88)
+            b = self.ResizeBitmap(self.GetSkinImage('Trap'), 62, 88)
         elif att == 'Spell':
-            b = self.ResizeBitmap(self.GetSkinImage('Spell'), 60, 88)
+            b = self.ResizeBitmap(self.GetSkinImage('Spell'), 62, 88)
         bmp = self.GetImageCardScaled(c.GetCardName())
         if not bmp is -1:
             dc = wx.MemoryDC()
@@ -391,7 +385,7 @@ class Engine():
         path = os.path.join(self.ImagesDirectory, name + '.jpg')
         if os.path.exists(path):
             image = wx.Image(path)
-            image.Rescale(60, 88, wx.IMAGE_QUALITY_HIGH)
+            image.Rescale(62, 88, wx.IMAGE_QUALITY_HIGH)
             return wx.BitmapFromImage(image)
         return -1
 

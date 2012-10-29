@@ -24,12 +24,14 @@ POS_FIELD = 0
 POS_HAND = 1
 POS_DECK = 2
 POS_GRAVE = 3
+POS_DAMAGE = 4
 POS_RFG = 6
 POS_OPP_FIELD = 7
 POS_OPP_HAND = 8
 POS_OPP_GRAVE = 9
 POS_OPP_RFG = 10
 POS_OPP_DECK = 11
+POS_OPP_DAMAGE = 12
 
 FACE_DOWN = 0
 FACE_UP = 1
@@ -46,15 +48,21 @@ LOOK_DECK_YES = 0
 LOOK_DECK_NO = 1
 LOOK_GRAVE_YES = 2
 LOOK_GRAVE_NO = 3
+LOOK_DAMAGE_YES = 19
+LOOK_DAMAGE_NO = 20
 LOOK_RFG_YES = 4
 LOOK_RFG_NO = 5
 LOOK_OPPONENT_GRAVE_YES = 8
 LOOK_OPPONENT_GRAVE_NO = 9
+LOOK_OPPONENT_DAMAGE_YES = 21
+LOOK_OPPONENT_DAMAGE_NO = 22
 LOOK_OPPONENT_RFG_YES = 10
 LOOK_OPPONENT_RFG_NO = 11
 
 ACTION_DISCARDTOP = 0
 ACTION_REVEALTOP = 1
+ACTION_CHECKTOP = 2
+ACTION_SCTOP = 3
 
 
 class GameObject(wx.Window):
@@ -77,7 +85,7 @@ class GameObject(wx.Window):
 
 class ConsoleCtrl(wx.TextCtrl):
     def __init__(self, parent):
-        wx.TextCtrl.__init__(self, parent, pos=(700,540), size=(580,-1), style=wx.TE_PROCESS_ENTER)
+        wx.TextCtrl.__init__(self, parent, pos=(710,680), size=(300,-1), style=wx.TE_PROCESS_ENTER)
         self.Bind(wx.EVT_TEXT_ENTER, self.OnPressEnter)
 
     def OnPressEnter(self, event):
@@ -99,6 +107,7 @@ class GamePanel(wx.Panel):
         self._field = []
         self._deck = []
         self._grave = []
+        self._damage = []
         self._rfg = []
         self._hand = []
         self._consolectrl = ConsoleCtrl(self)
@@ -118,23 +127,27 @@ class GamePanel(wx.Panel):
         
         self._menuactions = wx.Menu()
         item = wx.MenuItem(self._menuactions,-1,self._engine.GetLangString('Drop Zone'))
-        item.SetBitmap(self._engine.GetSkinImage('Graveico'))
+        item.SetBitmap(self._engine.GetSkinImage('DropIco'))
         self.Parent.Bind(wx.EVT_MENU, self.OnGraveLClick, item)
         self._menuactions.AppendItem(item)
-        item = wx.MenuItem(self._menuactions,-1,self._engine.GetLangString('Extra'))
-        item.SetBitmap(self._engine.GetSkinImage('Torfg'))
+        item = wx.MenuItem(self._menuactions,-1,self._engine.GetLangString('Damage Zone'))
+        item.SetBitmap(self._engine.GetSkinImage('DamageIco'))
+        self.Parent.Bind(wx.EVT_MENU, self.OnDamageLClick, item)
+        self._menuactions.AppendItem(item)
+        item = wx.MenuItem(self._menuactions,-1,self._engine.GetLangString('Soul'))
+        item.SetBitmap(self._engine.GetSkinImage('SoulIco'))
         self.Parent.Bind(wx.EVT_MENU, self.OnGamePopupRFG, item)
         self._menuactions.AppendItem(item)
         item = wx.MenuItem(self._menuactions,-1,self._engine.GetLangString('Search Deck'))
         self.Parent.Bind(wx.EVT_MENU, self.OnPopupDeckSearch, item)
-        item.SetBitmap(self._engine.GetSkinImage('Searchdeck'))
+        item.SetBitmap(self._engine.GetSkinImage('SearchDeck'))
         self._menuactions.AppendItem(item)
         item = wx.MenuItem(self._menuactions,-1,self._engine.GetLangString("Opponent's Drop Zone"))
-        item.SetBitmap(self._engine.GetSkinImage('Tograve'))
+        item.SetBitmap(self._engine.GetSkinImage('DropIco'))
         self.Parent.Bind(wx.EVT_MENU, self.OnOpponentGraveLClick, item)
         self._menuactions.AppendItem(item)
-        item = wx.MenuItem(self._menuactions,-1,self._engine.GetLangString("Opponent's Extra"))
-        item.SetBitmap(self._engine.GetSkinImage('Torfg'))
+        item = wx.MenuItem(self._menuactions,-1,self._engine.GetLangString("Opponent's Soul"))
+        item.SetBitmap(self._engine.GetSkinImage('SoulIco'))
         self.Parent.Bind(wx.EVT_MENU, self.OnGamePopupOpponentRFG, item)
         self._menuactions.AppendItem(item)
         item = wx.MenuItem(self._menuactions,-1,self._engine.GetLangString('Roll a D6'))
@@ -171,7 +184,7 @@ class GamePanel(wx.Panel):
         #self._messagectrl = wx.html.HtmlWindow(self, pos=(703,370), size=(154,330))
         #self._messagectrl.SetFonts('Tahoma','Tahoma',[8,8,8,8,8,8,8])
         #self._messagetext = ''
-        self._messagectrl = wx.richtext.RichTextCtrl(self, pos=(700,430), size=(580,110), style=wx.richtext.RE_MULTILINE|wx.richtext.RE_READONLY|wx.NO_BORDER)
+        self._messagectrl = wx.richtext.RichTextCtrl(self, pos=(710,510), size=(300,170), style=wx.richtext.RE_MULTILINE|wx.richtext.RE_READONLY|wx.NO_BORDER)
         self._messagectrl.BeginFont(wx.Font(pointSize=8,family=wx.FONTFAMILY_DEFAULT,style=wx.FONTSTYLE_NORMAL,weight=wx.FONTWEIGHT_NORMAL, faceName="Tahoma"))
         # Smiles
         #self._smiles = ['angel','angry','asd','baby','bana','bhua','biggrin','biglaugha','coffee','censored','byebye','confused','deer','disgust','eek','elf1','elf2','elf3','flamed1','flamed2','freddy','frown','frusta','ghgh','girl','goccia','guns','hammer','hippy','ghgh2','rofl','glass','blush','king','kiss','laugh','lingua','lol','lolly','look','love','mad','metal','ass','nono','no','o','oink','omg','ahsi','laughs','up','down','puke','rain','read','woot','rofl','roll','rolly','rosik','rotfl','sad','saint','sbang','sbav','scratch','ass2','ser','shocked','sigh','silly','smile','smoke','smokin','sheep','spiny','study','sure','talk','tongue','sad2','ueee','wave','woot','yuppi','zzz','afraid']
@@ -180,18 +193,21 @@ class GamePanel(wx.Panel):
         self._consolectrl.SetFont(wx.Font(pointSize=8,family=wx.FONTFAMILY_DEFAULT,style=wx.FONTSTYLE_NORMAL,weight=wx.FONTWEIGHT_NORMAL, faceName="Tahoma"))
         self._consolectrl.SetFocus()
         self._gravelistctrl = GraveListControl(self)
+        self._damagelistctrl = DamageListControl(self)
         self._decklistctrl = DeckListControl(self)
         self._rfglistctrl = RFGListControl(self)
         self._opponentgravelistctrl = OpponentGraveListControl(self)
+        self._opponentdamagelistctrl = OpponentDamageListControl(self)
         self._opponentdecklistctrl = OpponentDeckListControl(self)
         self._opponentrfglistctrl = OpponentRFGListControl(self)
         self._cmdhandlers = {}
-        self._cardsize=wx.Size(60,88)
+        self._cardsize=wx.Size(62,88)
         self.CommandHandlers()
         self._opponentorigdeck = None
         self._opponentfield = []
         self._opponentdeck = []
         self._opponentgrave = []
+        self._opponentdamage = []
         self._opponentrfg = []
         self._opponenthand = []
         self._notes = []
@@ -206,20 +222,29 @@ class GamePanel(wx.Panel):
         self._deckctrl = DeckControl(self._fieldctrl, (619,206), self._engine.GetSkinImage('Deck'))
         self._deckctrl.Bind(wx.EVT_LEFT_DCLICK, self.OnDeckDClick)
         self._deckctrl.Bind(wx.EVT_RIGHT_UP, self.OnDeckRClick)
+        self._deckcounttext = wx.StaticText(self._fieldctrl, -1, '0', pos=(640,230))
         # Grave
-        self._gravectrl = GraveControl(self._fieldctrl, (619,109), self._engine.GetSkinImage('Grave'), self)
+        self._gravectrl = GraveControl(self._fieldctrl, (619,109), self._engine.GetSkinImage('Drop'), self)
         self._gravectrl.Bind(wx.EVT_LEFT_UP, self.OnGraveLClick)
         self._gravectrl.UpdateCardTooltip(self._grave)
+        # Damage
+        self._damagectrl = DamageControl(self._fieldctrl, (20,30), self._engine.GetSkinImage('Damage'), self)
+        self._damagectrl.Bind(wx.EVT_LEFT_UP, self.OnDamageLClick)
+        self._damagectrl.UpdateCardTooltip(self._damage)
         # RFG
-        self._rfgctrl = RFGControl(self._fieldctrl, (619,11), self._engine.GetSkinImage('RFG'), self)
+        self._rfgctrl = RFGControl(self._fieldctrl, (304,20), self._engine.GetSkinImage('Soul'), self)
         self._rfgctrl.Bind(wx.EVT_LEFT_UP, self.OnGamePopupRFG)
         self._rfgctrl.UpdateCardTooltip(self._rfg)
         # OpponentGrave
-        self._opponentgravectrl = OpponentGraveControl(self._opponentfieldctrl, (20,102), self._engine.GetSkinImage('Grave'), self)
+        self._opponentgravectrl = OpponentGraveControl(self._opponentfieldctrl, (20,102), self._engine.GetSkinImage('Drop'), self)
         self._opponentgravectrl.Bind(wx.EVT_LEFT_UP, self.OnOpponentGraveLClick)
         self._opponentgravectrl.UpdateCardTooltip(self._opponentgrave)
+        # OpponentDamage
+        self._opponentdamagectrl = OpponentDamageControl(self._opponentfieldctrl, (618,170), self._engine.GetSkinImage('Damage'), self)
+        self._opponentdamagectrl.Bind(wx.EVT_LEFT_UP, self.OnOpponentDamageLClick)
+        self._opponentdamagectrl.UpdateCardTooltip(self._opponentdamage)
         # OpponentRFG
-        self._opponentrfgctrl = OpponentRFGControl(self._opponentfieldctrl, (20,202), self._engine.GetSkinImage('RFG'), self)
+        self._opponentrfgctrl = OpponentRFGControl(self._opponentfieldctrl, (304,250), self._engine.GetSkinImage('Soul'), self)
         self._opponentrfgctrl.Bind(wx.EVT_LEFT_UP, self.OnGamePopupOpponentRFG)
         self._opponentrfgctrl.UpdateCardTooltip(self._opponentrfg)
         # OpponentDeck
@@ -242,32 +267,40 @@ class GamePanel(wx.Panel):
         # Menu 2
         self._hand_monster_menu = wx.Menu()
         item = wx.MenuItem(self._hand_monster_menu, -1, self._engine.GetLangString('Call/Ride'))
-        item.SetBitmap(self._engine.GetSkinImage('Summon'))
+        item.SetBitmap(self._engine.GetSkinImage('Call'))
         self._hand_monster_menu.AppendItem(item)
         self.Bind(wx.EVT_MENU, self.OnHandMonsterSummon, item)
         item = wx.MenuItem(self._hand_monster_menu, -1, self._engine.GetLangString('Guard'))
-        item.SetBitmap(self._engine.GetSkinImage(''))
+        item.SetBitmap(self._engine.GetSkinImage('Guard'))
         self._hand_monster_menu.AppendItem(item)
         self.Bind(wx.EVT_MENU, self.OnHandMonsterPosition, item)
+        item = wx.MenuItem(self._hand_monster_menu, -1, self._engine.GetLangString('Set'))
+        item.SetBitmap(self._engine.GetSkinImage('Setst'))
+        self._hand_monster_menu.AppendItem(item)
+        self.Bind(wx.EVT_MENU, self.OnHandMTPosition, item)
         # Menu 3
         self._game_menu = wx.Menu()
         #item = wx.MenuItem(self._game_menu, -1, 'New Note')
         #self._game_menu.AppendItem(item)
         #self.Bind(wx.EVT_MENU, self.OnNewNote, item)
         item = wx.MenuItem(self._game_menu, -1, self._engine.GetLangString('Drop Zone'))
-        item.SetBitmap(self._engine.GetSkinImage('Graveico'))
+        item.SetBitmap(self._engine.GetSkinImage('DropIco'))
         self._game_menu.AppendItem(item)
         self.Bind(wx.EVT_MENU, self.OnGraveLClick, item)
-        item = wx.MenuItem(self._game_menu, -1, self._engine.GetLangString('Extra'))
-        item.SetBitmap(self._engine.GetSkinImage('Torfg'))
+        item = wx.MenuItem(self._game_menu, -1, self._engine.GetLangString('Damage Zone'))
+        item.SetBitmap(self._engine.GetSkinImage('DamageIco'))
+        self._game_menu.AppendItem(item)
+        self.Bind(wx.EVT_MENU, self.OnGraveLClick, item)
+        item = wx.MenuItem(self._game_menu, -1, self._engine.GetLangString('Soul'))
+        item.SetBitmap(self._engine.GetSkinImage('SoulIco'))
         self._game_menu.AppendItem(item)
         self.Bind(wx.EVT_MENU, self.OnGamePopupRFG, item)
         item = wx.MenuItem(self._game_menu, -1, self._engine.GetLangString('Search Deck'))
-        item.SetBitmap(self._engine.GetSkinImage('Searchdeck'))
+        item.SetBitmap(self._engine.GetSkinImage('SearchDeck'))
         self._game_menu.AppendItem(item)
         self.Bind(wx.EVT_MENU, self.OnPopupDeckSearch, item)
-        item = wx.MenuItem(self._game_menu, -1, self._engine.GetLangString("Opponent's Extra"))
-        item.SetBitmap(self._engine.GetSkinImage('Torfg'))
+        item = wx.MenuItem(self._game_menu, -1, self._engine.GetLangString("Opponent's Soul"))
+        item.SetBitmap(self._engine.GetSkinImage('SoulIco'))
         self._game_menu.AppendItem(item)
         self.Bind(wx.EVT_MENU, self.OnGamePopupOpponentRFG, item)
         item = wx.MenuItem(self._game_menu, -1, self._engine.GetLangString('Roll a d6'))
@@ -283,8 +316,8 @@ class GamePanel(wx.Panel):
         self._game_menu.AppendItem(item)
         self.Bind(wx.EVT_MENU, self.OnGamePopupResetGame, item)
         # Card Visualization
-        self._cardimagectrl = wx.StaticBitmap(self, -1, size=(290,420), pos=(720,2))
-        self._carddescriptionctrl = wx.TextCtrl(self, -1, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_CENTRE, size=(254,420), pos=(1020,2))
+        self._cardimagectrl = wx.StaticBitmap(self, -1, size=(165,240), pos=(780,10))
+        self._carddescriptionctrl = wx.TextCtrl(self, -1, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_BESTWRAP, size=(300,260), pos=(710,260))
         # Hotkeys
         self._keyhandler = keyhandler.KeyHandler()
         self._hotkeys = {}
@@ -306,14 +339,14 @@ class GamePanel(wx.Panel):
     # Apre il browser predefinito alla homepage di CFVVDS
     def OnMenuWeb(self, event=None):
         try:
-            webbrowser.open_new_tab('http://akademija.visiems.lt/')
+            webbrowser.open_new_tab('http://vanguard.jprject.xz.lt')
         except:
             pass
 
     
 
     def OnConsoleLostFocus(self, event):
-        if self.IsShown() and self.IsShownOnScreen() and not self._decklistctrl.IsActive() and not self._opponentdecklistctrl.IsActive() and not self._gravelistctrl.IsActive() and not self._opponentgravelistctrl.IsActive() and not self._rfglistctrl.IsActive() and not self._opponentrfglistctrl.IsActive() and not self._smilesdialog.IsActive():
+        if self.IsShown() and self.IsShownOnScreen() and not self._decklistctrl.IsActive() and not self._opponentdecklistctrl.IsActive() and not self._gravelistctrl.IsActive() and not self._damagelistctrl.IsActive() and not self._opponentgravelistctrl.IsActive() and not self._opponentdamagelistctrl.IsActive() and not self._rfglistctrl.IsActive() and not self._opponentrfglistctrl.IsActive() and not self._smilesdialog.IsActive():
             self._consolectrl.SetFocus()
 
     def Pass(self):
@@ -371,21 +404,21 @@ class GamePanel(wx.Panel):
         if self._rfglistctrl.IsShown():
             self._rfglistctrl.Hide()
             self.WriteLookPacket(LOOK_RFG_NO)
-            self.WriteGameMessage(self._engine.GetLangString("end looking at his Extra."), CHAT_PLAYER)
+            self.WriteGameMessage(self._engine.GetLangString("end looking at his Soul."), CHAT_PLAYER)
         else:
             self._rfglistctrl.Show()
             self.WriteLookPacket(LOOK_RFG_YES)
-            self.WriteGameMessage(self._engine.GetLangString("is looking at his Extra"), CHAT_PLAYER)
+            self.WriteGameMessage(self._engine.GetLangString("is looking at his Soul"), CHAT_PLAYER)
 
     def OnGamePopupOpponentRFG(self, event=None):
         if self._opponentrfglistctrl.IsShown():
             self._opponentrfglistctrl.Hide()
             self.WriteLookPacket(LOOK_OPPONENT_RFG_NO)
-            self.WriteGameMessage(self._engine.GetLangString("end looking at his opponent's Extra."), CHAT_PLAYER)
+            self.WriteGameMessage(self._engine.GetLangString("end looking at his opponent's Soul."), CHAT_PLAYER)
         else:
             self._opponentrfglistctrl.Show()
             self.WriteLookPacket(LOOK_OPPONENT_RFG_YES)
-            self.WriteGameMessage(self._engine.GetLangString("is looking at his opponent's Extra."), CHAT_PLAYER)
+            self.WriteGameMessage(self._engine.GetLangString("is looking at his opponent's Soul."), CHAT_PLAYER)
 
     def OnGamePopupResetGame(self, event=None):
         self.ResetGame()
@@ -397,10 +430,12 @@ class GamePanel(wx.Panel):
         self._deck = []
         self._hand = []
         self._grave = []
+        self._damage = []
         self._rfg = []
         self._opponentdeck = []
         self._opponenthand = []
         self._opponentgrave = []
+        self._opponentdamage = []
         self._opponentrfg = []
 
     def UseDeck(self, deck):
@@ -414,10 +449,12 @@ class GamePanel(wx.Panel):
         self.RefreshHand()
         self.RefreshRFG()
         self.RefreshGrave()
+        self.RefreshDamage()
         self.RefreshOpponentDeck()
         self.RefreshOpponentHand()
         self.RefreshOpponentRFG()
         self.RefreshOpponentGrave()
+        self.RefreshOpponentDamage()
     
     def OnCardTarget(self, event=None):
         card = self._currentcard
@@ -458,23 +495,36 @@ class GamePanel(wx.Panel):
             self.OnCardHandPopup(c)
         elif pos == POS_GRAVE:
             self.OnCardGravePopup(c)
+        elif pos == POS_DAMAGE:
+            self.OnCardDamagePopup(c)
         elif pos == POS_RFG:
             self.OnCardRFGPopup(c)
         elif pos == POS_DECK:
             self.OnCardDeckPopup(c)
+    
+    def OnCardDClick(self, c):
+        pos = c.GetCardPosition()
+        if pos == POS_FIELD:
+            self.OnCardFieldDClick(c)
+        else:
+            return
 
     def OnCardHandPopup(self, c):
         menu = wx.Menu()
         item = wx.MenuItem(menu, -1, self._engine.GetLangString('Hand Shuffle'))
-        item.SetBitmap(self._engine.GetSkinImage('Todecksh'))
+        item.SetBitmap(self._engine.GetSkinImage('ShHand'))
         menu.AppendItem(item)
         self.Bind(wx.EVT_MENU, self.OnCardShuffleHand, item)
         item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Drop Zone'))
-        item.SetBitmap(self._engine.GetSkinImage('Tograve'))
+        item.SetBitmap(self._engine.GetSkinImage('ToDrop'))
         menu.AppendItem(item)
         self.Bind(wx.EVT_MENU, self.OnCardHandToGrave, item)
-        item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Extra'))
-        item.SetBitmap(self._engine.GetSkinImage('Torfg'))
+        item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Damage Zone'))
+        item.SetBitmap(self._engine.GetSkinImage('ToDamage'))
+        menu.AppendItem(item)
+        self.Bind(wx.EVT_MENU, self.OnCardHandToDamage, item)
+        item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Soul'))
+        item.SetBitmap(self._engine.GetSkinImage('ToSoul'))
         menu.AppendItem(item)
         self.Bind(wx.EVT_MENU, self.OnCardHandToRFG, item)
         item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Deck/Shuffle'))
@@ -489,6 +539,14 @@ class GamePanel(wx.Panel):
         item.SetBitmap(self._engine.GetSkinImage('Tobottomdeck'))
         menu.AppendItem(item)
         self.Bind(wx.EVT_MENU, self.OnCardHandToBottomDeck, item)
+        item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Top-Deck Hidden'))
+        item.SetBitmap(self._engine.GetSkinImage('TotopdeckH'))
+        menu.AppendItem(item)
+        self.Bind(wx.EVT_MENU, self.OnCardHandToTopDeckH, item)
+        item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Bottom-Deck Hidden'))
+        item.SetBitmap(self._engine.GetSkinImage('TobottomdeckH'))
+        menu.AppendItem(item)
+        self.Bind(wx.EVT_MENU, self.OnCardHandToBottomDeckH, item)
         item = wx.MenuItem(menu, -1, self._engine.GetLangString('Target'))
         item.SetBitmap(self._engine.GetSkinImage('Targetsm'))
         menu.AppendItem(item)
@@ -506,6 +564,18 @@ class GamePanel(wx.Panel):
         self.RefreshHand()
         #self.WriteGameMessage(self._engine.GetLangString('sent ') + card.GetCardName() + self._engine.GetLangString(' to his graveyard.'), CHAT_PLAYER)
         self.WriteGameMessage(self._engine.GetLangString('sent %s to his Drop Zone.', card.GetCardName()), CHAT_PLAYER)
+    
+    def OnCardHandToDamage(self, arg=None):
+        card = self._currentcard
+        self.WriteMoveCardPacket(card, POS_OPP_DAMAGE)
+        self.MoveCard(self._hand, self._damage, card)
+        card.SetCardState(POS_DAMAGE)
+        card.Reparent(self._damagelistctrl)
+        self.RefreshDamage()
+        self.RefreshHand()
+        #self.WriteGameMessage(self._engine.GetLangString('sent ') + card.GetCardName() + self._engine.GetLangString(' to his graveyard.'), CHAT_PLAYER)
+        self.WriteGameMessage(self._engine.GetLangString('sent %s to his Damage Zone.', card.GetCardName()), CHAT_PLAYER)  
+    
 
     def OnCardHandToRFG(self, arg=None):
         card = self._currentcard
@@ -515,7 +585,7 @@ class GamePanel(wx.Panel):
         card.Reparent(self._rfglistctrl)
         self.RefreshRFG()
         self.RefreshHand()
-        self.WriteGameMessage(self._engine.GetLangString('sent') + card.GetCardName() + self._engine.GetLangString(' to Extra.'), CHAT_PLAYER)
+        self.WriteGameMessage(self._engine.GetLangString('sent') + card.GetCardName() + self._engine.GetLangString(' to Soul.'), CHAT_PLAYER)
 
     def OnCardHandToDeckShuffle(self, arg=None):
         card = self._currentcard
@@ -553,6 +623,27 @@ class GamePanel(wx.Panel):
         self.RefreshHand()
         self.WriteGameMessage(self._engine.GetLangString('sent ') + card.GetCardName() + self._engine.GetLangString(' to the bottom of his deck.') + ' ' + str(len(self._deck)) +self._engine.GetLangString(' cards left.'), CHAT_PLAYER)
     
+    
+    def OnCardHandToTopDeckH(self, arg=None):
+        card = self._currentcard
+        self.WriteMoveCardPacket(card, POS_OPP_DECK, 3) # Top-Deck
+        self.MoveCardToTop(self._hand, self._deck, card)
+        card.SetCardState(POS_DECK)
+        card.Reparent(self._decklistctrl)
+        self.RefreshDeck()
+        self.RefreshHand()
+        self.WriteGameMessage(self._engine.GetLangString('sent card ')  + self._engine.GetLangString(' to the top of his deck.')+ ' ' + str(len(self._deck)) +self._engine.GetLangString(' cards left.'), CHAT_PLAYER)
+
+    def OnCardHandToBottomDeckH(self, arg=None):
+        card = self._currentcard
+        self.WriteMoveCardPacket(card, POS_OPP_DECK, 4) # Bottom-Deck
+        self.MoveCardToBottom(self._hand, self._deck, card)
+        card.SetCardState(POS_DECK)
+        card.Reparent(self._decklistctrl)
+        self.RefreshDeck()
+        self.RefreshHand()
+        self.WriteGameMessage(self._engine.GetLangString('sent card ') + self._engine.GetLangString(' to the bottom of his deck.') + ' ' + str(len(self._deck)) +self._engine.GetLangString(' cards left.'), CHAT_PLAYER)
+        
     def OnHandMTActivate(self, arg=None):
         card = self._currentcard[0]
         x = self._currentcard[1]
@@ -579,7 +670,7 @@ class GamePanel(wx.Panel):
         card.SetPosition(self.PositionCard(card, x, y))
         card.Hide()
         card.Show()
-        self.WriteGameMessage(self._engine.GetLangString('place a M/T on the field.'), CHAT_PLAYER)
+        self.WriteGameMessage(self._engine.GetLangString('place card on the field.'), CHAT_PLAYER)
     
     def OnHandMonsterSummon(self, arg=None):
         card = self._currentcard[0]
@@ -607,7 +698,7 @@ class GamePanel(wx.Panel):
         card.SetPosition(self.PositionCard(card, x, y))
         card.Hide()
         card.Show()
-        self.WriteGameMessage(self._engine.GetLangString('guards with ')  + card.GetCardName(), CHAT_PLAYER)
+        self.WriteGameMessage(self._engine.GetLangString('guards with ')  + card.GetCardName() +'. ' +  card.GetCardShield(), CHAT_PLAYER)
 
     def OnOpponentCardHandToGrave(self, arg=None):
         card = self._opponentcurrentcard
@@ -618,6 +709,16 @@ class GamePanel(wx.Panel):
         self.RefreshOpponentHand()
         #self.WriteGameMessage(self._engine.GetLangString('sent ') + card.GetCardName() + self._engine.GetLangString(' to his graveyard.'), CHAT_OPPONENT)
         self.WriteGameMessage(self._engine.GetLangString('sent %s to his Drop Zone.', card.GetCardName()), CHAT_OPPONENT)
+    
+    def OnOpponentCardHandToDamage(self, arg=None):
+        card = self._opponentcurrentcard
+        self.MoveCard(self._opponenthand, self._opponentdamage, card)
+        card.SetCardState(POS_OPP_DAMAGE)
+        card.Reparent(self._opponentdamagelistctrl)
+        self.RefreshOpponentDamage()
+        self.RefreshOpponentHand()
+        #self.WriteGameMessage(self._engine.GetLangString('sent ') + card.GetCardName() + self._engine.GetLangString(' to his graveyard.'), CHAT_OPPONENT)
+        self.WriteGameMessage(self._engine.GetLangString('sent %s to his Damage Zone.', card.GetCardName()), CHAT_OPPONENT)
 
     def OnOpponentCardHandToRFG(self, arg=None):
         card = self._opponentcurrentcard
@@ -626,7 +727,7 @@ class GamePanel(wx.Panel):
         card.Reparent(self._opponentrfglistctrl)
         self.RefreshOpponentRFG()
         self.RefreshOpponentHand()
-        self.WriteGameMessage(self._engine.GetLangString('sent') + card.GetCardName() + self._engine.GetLangString(' to Extra.'), CHAT_OPPONENT)
+        self.WriteGameMessage(self._engine.GetLangString('sent') + card.GetCardName() + self._engine.GetLangString(' to Soul.'), CHAT_OPPONENT)
 
     def OnOpponentCardHandToDeckShuffle(self, arg=None):
         card = self._opponentcurrentcard
@@ -655,6 +756,32 @@ class GamePanel(wx.Panel):
         self.RefreshOpponentHand()
         self.WriteGameMessage(self._engine.GetLangString('sent ') + card.GetCardName() + self._engine.GetLangString(' to the bottom of his deck.')+ ' ' + str(len(self._opponentdeck)) +self._engine.GetLangString(' cards left.'), CHAT_OPPONENT)
     
+    def OnOpponentCardHandToTopDeckH(self, arg=None):
+        card = self._opponentcurrentcard
+        self.MoveCardToTop(self._opponenthand, self._opponentdeck, card)
+        card.SetCardState(POS_OPP_DECK)
+        card.Reparent(self._opponentdecklistctrl)
+        self.RefreshOpponentDeck()
+        self.RefreshOpponentHand()
+        self.WriteGameMessage(self._engine.GetLangString('sent card') + self._engine.GetLangString(' to the top of his deck.')+ ' ' + str(len(self._opponentdeck)) +self._engine.GetLangString(' cards left.'), CHAT_OPPONENT)
+
+    def OnOpponentCardHandToBottomDeckH(self, arg=None):
+        card = self._opponentcurrentcard
+        self.MoveCardToBottom(self._opponenthand, self._opponentdeck, card)
+        card.SetCardState(POS_OPP_DECK)
+        card.Reparent(self._opponentdecklistctrl)
+        self.RefreshOpponentDeck()
+        self.RefreshOpponentHand()
+        self.WriteGameMessage(self._engine.GetLangString('sent card') + self._engine.GetLangString(' to the bottom of his deck.')+ ' ' + str(len(self._opponentdeck)) +self._engine.GetLangString(' cards left.'), CHAT_OPPONENT)
+    
+    def OnOpponentCardHandToBottomDeckH2(self, arg=None):
+        card = self._opponentdeck[0]
+        self.MoveCardToBottom(self._opponentdeck, self._opponentdeck, card)
+        card.SetCardState(POS_OPP_DECK)
+        card.Reparent(self._opponentdecklistctrl)
+        self.RefreshOpponentDeck()
+        self.WriteGameMessage(self._engine.GetLangString('Sent top card to the bottom.')+ ' ' + str(len(self._opponentdeck)) +self._engine.GetLangString(' cards left.'), CHAT_OPPONENT)
+        
     def OnOpponentHandMTActivate(self, arg=None):
         card = self._opponentcurrentcard[0]
         x = self._opponentcurrentcard[1]
@@ -679,7 +806,7 @@ class GamePanel(wx.Panel):
         card.SetPosition(self.PositionCard(card, x, y))
         card.Hide()
         card.Show()
-        self.WriteGameMessage(self._engine.GetLangString('place a M/T on the field.'), CHAT_OPPONENT)
+        self.WriteGameMessage(self._engine.GetLangString('placed card on the field.'), CHAT_OPPONENT)
     
     def OnOpponentHandMonsterSummon(self, arg=None):
         card = self._opponentcurrentcard[0]
@@ -705,7 +832,7 @@ class GamePanel(wx.Panel):
         card.SetPosition(self.PositionCard(card, x, y))
         card.Hide()
         card.Show()
-        self.WriteGameMessage(self._engine.GetLangString('guards with ') + card.GetCardName(), CHAT_OPPONENT)
+        self.WriteGameMessage(self._engine.GetLangString('guards with ') + card.GetCardName() + '. ' + card.GetCardShield(), CHAT_OPPONENT)
 
     def OnCardFieldPopup(self, c):
         menu = wx.Menu()
@@ -715,7 +842,7 @@ class GamePanel(wx.Panel):
                 item.SetBitmap(self._engine.GetSkinImage('Attack'))
                 menu.AppendItem(item)
                 self.Bind(wx.EVT_MENU, self.OnCardFieldAttack, item)
-                item = wx.MenuItem(menu, -1, self._engine.GetLangString('Flip/Horiz'))
+                '''item = wx.MenuItem(menu, -1, self._engine.GetLangString('Flip/Horiz'))
                 item.SetBitmap(self._engine.GetSkinImage('Flip'))
                 menu.AppendItem(item)
                 self.Bind(wx.EVT_MENU, self.OnCardFieldFlipHorizontal, item)
@@ -723,20 +850,36 @@ class GamePanel(wx.Panel):
                 item = wx.MenuItem(menu, -1, self._engine.GetLangString('Flip/Vert'))
                 item.SetBitmap(self._engine.GetSkinImage('Flip'))
                 menu.AppendItem(item)
-                self.Bind(wx.EVT_MENU, self.OnCardFieldFlipVertical, item)
+                self.Bind(wx.EVT_MENU, self.OnCardFieldFlipVertical, item)'''
             item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Drop Zone'))
-            item.SetBitmap(self._engine.GetSkinImage('Tograve'))
+            item.SetBitmap(self._engine.GetSkinImage('ToDrop'))
             menu.AppendItem(item)
             self.Bind(wx.EVT_MENU, self.OnCardFieldToGrave, item)
             item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Hand'))
             item.SetBitmap(self._engine.GetSkinImage('Tohand'))
             menu.AppendItem(item)
             self.Bind(wx.EVT_MENU, self.OnCardFieldToHand, item)
-            item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Extra'))
-            item.SetBitmap(self._engine.GetSkinImage('Torfg'))
+            item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Soul'))
+            item.SetBitmap(self._engine.GetSkinImage('ToSoul'))
             menu.AppendItem(item)
             self.Bind(wx.EVT_MENU, self.OnCardFieldToRFG, item)
-            if c.IsVertical():
+            item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Damage Zone'))
+            item.SetBitmap(self._engine.GetSkinImage('ToDamage'))
+            menu.AppendItem(item)
+            self.Bind(wx.EVT_MENU, self.OnCardFieldToDamage, item)
+            item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Top-Deck'))
+            item.SetBitmap(self._engine.GetSkinImage('Totopdeck'))
+            menu.AppendItem(item)
+            self.Bind(wx.EVT_MENU, self.OnCardFieldToTopDeck, item)
+            item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Bottom-Deck'))
+            item.SetBitmap(self._engine.GetSkinImage('Tobottomdeck'))
+            menu.AppendItem(item)
+            self.Bind(wx.EVT_MENU, self.OnCardFieldToBottomDeck, item)
+            item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Deck-Shuffle'))
+            item.SetBitmap(self._engine.GetSkinImage('Todecksh'))
+            menu.AppendItem(item)
+            self.Bind(wx.EVT_MENU, self.OnCardFieldToDeckShuffle, item)
+            '''if c.IsVertical():
                 item = wx.MenuItem(menu, -1, self._engine.GetLangString('Horizontal'))
                 item.SetBitmap(self._engine.GetSkinImage('Horiz'))
                 menu.AppendItem(item)
@@ -745,7 +888,7 @@ class GamePanel(wx.Panel):
                 item = wx.MenuItem(menu, -1, self._engine.GetLangString('Vertical'))
                 item.SetBitmap(self._engine.GetSkinImage('Vert'))
                 menu.AppendItem(item)
-                self.Bind(wx.EVT_MENU, self.OnCardFieldVertical, item)
+                self.Bind(wx.EVT_MENU, self.OnCardFieldVertical, item)'''
             item = wx.MenuItem(menu, -1, self._engine.GetLangString('Flip'))
             item.SetBitmap(self._engine.GetSkinImage('Setst'))
             menu.AppendItem(item)
@@ -756,15 +899,15 @@ class GamePanel(wx.Panel):
             menu.AppendItem(item)
             self.Bind(wx.EVT_MENU, self.OnCardFieldFlip, item)
             item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Drop Zone'))
-            item.SetBitmap(self._engine.GetSkinImage('Tograve'))
+            item.SetBitmap(self._engine.GetSkinImage('ToDrop'))
             menu.AppendItem(item)
             self.Bind(wx.EVT_MENU, self.OnCardFieldToGrave, item)
             item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Hand'))
             item.SetBitmap(self._engine.GetSkinImage('Tohand'))
             menu.AppendItem(item)
             self.Bind(wx.EVT_MENU, self.OnCardFieldToHand, item)
-            item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Extra'))
-            item.SetBitmap(self._engine.GetSkinImage('Torfg'))
+            item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Soul'))
+            item.SetBitmap(self._engine.GetSkinImage('ToSoul'))
             menu.AppendItem(item)
             self.Bind(wx.EVT_MENU, self.OnCardFieldToRFG, item)
             if c.IsVertical():
@@ -808,6 +951,15 @@ class GamePanel(wx.Panel):
        # self.Bind(wx.EVT_MENU, self.OnCardChangeControl, item)
         self._currentcard = c
         self.PopupMenu(menu)
+        
+        
+    def OnCardFieldDClick(self, c):
+        self._currentcard = c
+        if c.IsVertical():
+            self.OnCardFieldHorizontal()
+        else:
+            self.OnCardFieldVertical()
+
 
     def OnCardFieldAttack(self, event=None):
         card = self._currentcard
@@ -899,6 +1051,16 @@ class GamePanel(wx.Panel):
         self.RefreshGrave()
         #self.WriteGameMessage(self._engine.GetLangString('sent ') + card.GetCardName() + self._engine.GetLangString(' to his graveyard.'), CHAT_PLAYER)
         self.WriteGameMessage(self._engine.GetLangString('sent %s to his Drop Zone.', card.GetCardName()), CHAT_PLAYER)
+        
+    def OnCardFieldToDamage(self, event=None):
+        card = self._currentcard
+        self.WriteMoveCardPacket(card, POS_OPP_DAMAGE)
+        self.MoveCard(self._field, self._damage, card)
+        card.SetCardState(POS_DAMAGE)
+        card.Reparent(self._damagelistctrl)
+        self.RefreshDamage()
+        #self.WriteGameMessage(self._engine.GetLangString('sent ') + card.GetCardName() + self._engine.GetLangString(' to his graveyard.'), CHAT_PLAYER)
+        self.WriteGameMessage(self._engine.GetLangString('sent %s to his graveyard.', card.GetCardName()), CHAT_PLAYER)
     
     def OnCardFieldToRFG(self, event=None):
         card = self._currentcard
@@ -907,7 +1069,7 @@ class GamePanel(wx.Panel):
         card.SetCardState(POS_RFG)
         card.Reparent(self._rfglistctrl)
         self.RefreshRFG()
-        self.WriteGameMessage(self._engine.GetLangString('sent') + card.GetCardName() + self._engine.GetLangString(' to Extra.'), CHAT_PLAYER)
+        self.WriteGameMessage(self._engine.GetLangString('sent') + card.GetCardName() + self._engine.GetLangString(' to Soul.'), CHAT_PLAYER)
 
     def OnCardFieldToTopDeck(self, event=None):
         card = self._currentcard
@@ -1020,13 +1182,21 @@ class GamePanel(wx.Panel):
         self.WriteGameMessage(self._engine.GetLangString('sent %s to his Drop Zone.', card.GetCardName()), CHAT_OPPONENT)
         #self.WriteGameMessage(self._engine.GetLangString('sent ') + card.GetCardName() + self._engine.GetLangString(' to his graveyard.'), CHAT_OPPONENT)
 
+    def OnOpponentCardFieldToDamage(self, event=None):
+        card = self._opponentcurrentcard
+        self.MoveCard(self._opponentfield, self._opponentdamage, card)
+        card.SetCardState(POS_OPP_DAMAGE)
+        card.Reparent(self._opponentdamagelistctrl)
+        self.RefreshOpponentDamage()
+        self.WriteGameMessage(self._engine.GetLangString('sent %s to his damage.', card.GetCardName()), CHAT_OPPONENT)
+
     def OnOpponentCardFieldToRFG(self, event=None):
         card = self._opponentcurrentcard
         self.MoveCard(self._opponentfield, self._opponentrfg, card)
         card.SetCardState(POS_OPP_RFG)
         card.Reparent(self._opponentrfglistctrl)
         self.RefreshOpponentRFG()
-        self.WriteGameMessage(self._engine.GetLangString('sent') + card.GetCardName() + self._engine.GetLangString(' to Extra.'), CHAT_OPPONENT)
+        self.WriteGameMessage(self._engine.GetLangString('sent') + card.GetCardName() + self._engine.GetLangString(' to Soul.'), CHAT_OPPONENT)
 
     def OnOpponentCardFieldToTopDeck(self, event=None):
         card = self._opponentcurrentcard
@@ -1079,8 +1249,8 @@ class GamePanel(wx.Panel):
         item.SetBitmap(self._engine.GetSkinImage('Tohand'))
         menu.AppendItem(item)
         self.Bind(wx.EVT_MENU, self.OnCardGraveToHand, item)
-        item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Extra'))
-        item.SetBitmap(self._engine.GetSkinImage('Torfg'))
+        item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Soul'))
+        item.SetBitmap(self._engine.GetSkinImage('ToSoul'))
         menu.AppendItem(item)
         self.Bind(wx.EVT_MENU, self.OnCardGraveToRFG, item)
         item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Deck/Shuffle'))
@@ -1151,7 +1321,7 @@ class GamePanel(wx.Panel):
         card.Reparent(self._rfglistctrl)
         self.RefreshRFG()
         self.RefreshGrave()
-        self.WriteGameMessage(self._engine.GetLangString('sent') + card.GetCardName() + self._engine.GetLangString(' to Extra.'), CHAT_PLAYER)
+        self.WriteGameMessage(self._engine.GetLangString('sent') + card.GetCardName() + self._engine.GetLangString(' to Soul.'), CHAT_PLAYER)
 
     def OnCardGraveToField(self, event=None):
         card = self._currentcard[0]
@@ -1167,6 +1337,102 @@ class GamePanel(wx.Panel):
         self.RefreshGrave()
         self.WriteGameMessage(self._engine.GetLangString('place ') + card.GetCardName() + self._engine.GetLangString(' on the field.'), CHAT_PLAYER)
 
+
+    #Damage
+    def OnCardDamagePopup(self, c):
+        menu = wx.Menu()
+        item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Hand'))
+        item.SetBitmap(self._engine.GetSkinImage('Tohand'))
+        menu.AppendItem(item)
+        self.Bind(wx.EVT_MENU, self.OnCardDamageToHand, item)
+        item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Soul'))
+        item.SetBitmap(self._engine.GetSkinImage('ToSoul'))
+        menu.AppendItem(item)
+        self.Bind(wx.EVT_MENU, self.OnCardDamageToRFG, item)
+        item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Deck/Shuffle'))
+        item.SetBitmap(self._engine.GetSkinImage('Todecksh'))
+        menu.AppendItem(item)
+        self.Bind(wx.EVT_MENU, self.OnCardDamageToDeckShuffle, item)
+        item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Top-Deck'))
+        item.SetBitmap(self._engine.GetSkinImage('Totopdeck'))
+        menu.AppendItem(item)
+        self.Bind(wx.EVT_MENU, self.OnCardDamageToTopDeck, item)
+        item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Bottom-Deck'))
+        item.SetBitmap(self._engine.GetSkinImage('Tobottomdeck'))
+        menu.AppendItem(item)
+        self.Bind(wx.EVT_MENU, self.OnCardDamageToBottomDeck, item)
+        item = wx.MenuItem(menu, -1, self._engine.GetLangString('Mark Flipped'))
+        item.SetBitmap(self._engine.GetSkinImage('Targetsm'))
+        menu.AppendItem(item)
+        self.Bind(wx.EVT_MENU, self.OnCardTarget, item)
+        self._currentcard = c
+        c.PopupMenu(menu)
+    
+    def OnCardDamageToHand(self, event=None):
+        card = self._currentcard
+        self.WriteMoveCardPacket(card, POS_OPP_DAMAGE)
+        self.MoveCardToBottom(self._damage, self._hand, card)
+        card.SetCardState(POS_HAND)
+        card.Reparent(self._handctrl)
+        self.RefreshHand()
+        self.RefreshDamage()
+        self.WriteGameMessage(self._engine.GetLangString('sent ') + card.GetCardName() + self._engine.GetLangString(' to his hand.'), CHAT_PLAYER)
+
+    def OnCardDamageToTopDeck(self, event=None):
+        card = self._currentcard
+        self.WriteMoveCardPacket(card, POS_OPP_DECK, 1)
+        self.MoveCardToTop(self._damage, self._deck, card)
+        card.SetCardState(POS_DECK)
+        card.Reparent(self._decklistctrl)
+        self.RefreshDeck()
+        self.RefreshDamage()
+        self.WriteGameMessage(self._engine.GetLangString('sent ') + card.GetCardName() + self._engine.GetLangString(' to the top of his deck.')+ ' ' + str(len(self._deck)) +self._engine.GetLangString(' cards left.'), CHAT_PLAYER)
+
+    def OnCardDamageToBottomDeck(self, event=None):
+        card = self._currentcard
+        self.WriteMoveCardPacket(card, POS_OPP_DECK, 0)
+        self.MoveCardToBottom(self._damage, self._deck, card)
+        card.SetCardState(POS_DECK)
+        card.Reparent(self._decklistctrl)
+        self.RefreshDeck()
+        self.RefreshDamage()
+        self.WriteGameMessage(self._engine.GetLangString('sent ') + card.GetCardName() + self._engine.GetLangString(' to the bottom of his deck.')+ ' ' + str(len(self._deck)) +self._engine.GetLangString(' cards left.'), CHAT_PLAYER)
+
+    def OnCardDamageToDeckShuffle(self, event=None):
+        card = self._currentcard
+        self.WriteMoveCardPacket(card, POS_OPP_DECK, 2)
+        self.MoveCard(self._damage, self._deck, card)
+        card.SetCardState(POS_DECK)
+        card.Reparent(self._decklistctrl)
+        self.WriteGameMessage(self._engine.GetLangString('sent ') + card.GetCardName() + self._engine.GetLangString(' to his deck.')+ ' ' + str(len(self._deck)) +self._engine.GetLangString(' cards left.'), CHAT_PLAYER)
+        self.Shuffle()
+        #self.RefreshDeck()
+        self.RefreshDamage()
+
+    def OnCardDamageToRFG(self, event=None):
+        card = self._currentcard
+        self.WriteMoveCardPacket(card, POS_OPP_RFG)
+        self.MoveCard(self._damage, self._rfg, card)
+        card.SetCardState(POS_RFG)
+        card.Reparent(self._rfglistctrl)
+        self.RefreshRFG()
+        self.RefreshDamage()
+        self.WriteGameMessage(self._engine.GetLangString('sent') + card.GetCardName() + self._engine.GetLangString(' to Soul.'), CHAT_PLAYER)
+
+    def OnCardDamageToField(self, event=None):
+        card = self._currentcard[0]
+        x = self._currentcard[1]
+        y = self._currentcard[2]
+        self.WriteMoveCardPacket(card, POS_OPP_FIELD, 0, x, y)
+        self.MoveCard(self._damage, self._field, card)
+        card.SetCardState(POS_FIELD)
+        card.Reparent(self._fieldctrl)
+        card.SetPosition(self.PositionCard(card, x, y))
+        card.Hide()
+        card.Show()
+        self.RefreshDamage()
+        self.WriteGameMessage(self._engine.GetLangString('place ') + card.GetCardName() + self._engine.GetLangString(' on the field.'), CHAT_PLAYER)
+   
     #Opponent Grave
     def OnOpponentCardGraveToHand(self, event=None):
         card = self._opponentcurrentcard
@@ -1212,7 +1478,16 @@ class GamePanel(wx.Panel):
         card.Reparent(self._opponentrfglistctrl)
         self.RefreshOpponentRFG()
         self.RefreshOpponentGrave()
-        self.WriteGameMessage(self._engine.GetLangString('sent') + card.GetCardName() + self._engine.GetLangString(' to Extra.'), CHAT_OPPONENT)
+        self.WriteGameMessage(self._engine.GetLangString('sent') + card.GetCardName() + self._engine.GetLangString(' to Soul.'), CHAT_OPPONENT)
+    
+    def OnOpponentCardDamageToRFG(self, event=None):
+        card = self._opponentcurrentcard
+        self.MoveCard(self._opponentdamage, self._opponentrfg, card)
+        card.SetCardState(POS_OPP_RFG)
+        card.Reparent(self._opponentrfglistctrl)
+        self.RefreshOpponentRFG()
+        self.RefreshOpponentDamage()
+        self.WriteGameMessage(self._engine.GetLangString('sent') + card.GetCardName() + self._engine.GetLangString(' to Soul.'), CHAT_OPPONENT)
     
     def OnOpponentCardGraveToField(self, event=None):
         card = self._opponentcurrentcard[0]
@@ -1227,6 +1502,66 @@ class GamePanel(wx.Panel):
         self.RefreshOpponentGrave()
         self.WriteGameMessage(self._engine.GetLangString('place ') + card.GetCardName() + self._engine.GetLangString(' on the field.'), CHAT_OPPONENT)
 
+    #Opponent Damage
+    def OnOpponentCardDamageToHand(self, event=None):
+        card = self._opponentcurrentcard
+        self.MoveCardToBottom(self._opponentdamage, self._opponenthand, card)
+        card.SetCardState(POS_OPP_HAND, face=FACE_DOWN)
+        card.Reparent(self._opponenthandctrl)
+        self.RefreshOpponentHand()
+        self.RefreshOpponentDamage()
+        self.WriteGameMessage(self._engine.GetLangString('sent ') + card.GetCardName() + self._engine.GetLangString(' to his hand.'), CHAT_OPPONENT)
+
+    def OnOpponentCardDamageToTopDeck(self, event=None):
+        card = self._opponentcurrentcard
+        self.MoveCardToTop(self._opponentdamage, self._opponentdeck, card)
+        card.SetCardState(POS_OPP_DECK)
+        card.Reparent(self._opponentdecklistctrl)
+        self.RefreshOpponentDeck()
+        self.RefreshOpponentDamage()
+        self.WriteGameMessage(self._engine.GetLangString('sent ') + card.GetCardName() + self._engine.GetLangString(' to the top of his deck.')+ ' ' + str(len(self._opponentdeck)) +self._engine.GetLangString(' cards left.'), CHAT_OPPONENT)
+
+    def OnOpponentCardDamageToBottomDeck(self, event=None):
+        card = self._opponentcurrentcard
+        self.MoveCardToBottom(self._opponentdamage, self._opponentdeck, card)
+        card.SetCardState(POS_OPP_DECK)
+        card.Reparent(self._opponentdecklistctrl)
+        self.RefreshOpponentDeck()
+        self.RefreshOpponentDamage()
+        self.WriteGameMessage(self._engine.GetLangString('sent ') + card.GetCardName() + self._engine.GetLangString(' to the bottom of his deck.')+ ' ' + str(len(self._opponentdeck)) +self._engine.GetLangString(' cards left.'), CHAT_OPPONENT)
+
+    def OnOpponentCardDamageToDeckShuffle(self, event=None):
+        card = self._opponentcurrentcard
+        self.MoveCard(self._opponentdamage, self._opponentdeck, card)
+        card.SetCardState(POS_OPP_DECK)
+        card.Reparent(self._opponentdecklistctrl)
+        self.RefreshOpponentDeck()
+        self.RefreshOpponentDamage()
+        self.WriteGameMessage(self._engine.GetLangString('sent ') + card.GetCardName() + self._engine.GetLangString(' to his deck.')+ ' ' + str(len(self._opponentdeck)) +self._engine.GetLangString(' cards left.'), CHAT_OPPONENT)
+
+
+    def OnOpponentCardDamageToRFG(self, event=None):
+        card = self._opponentcurrentcard
+        self.MoveCard(self._opponentdamage, self._opponentrfg, card)
+        card.SetCardState(POS_OPP_RFG)
+        card.Reparent(self._opponentrfglistctrl)
+        self.RefreshOpponentRFG()
+        self.RefreshOpponentDamage()
+        self.WriteGameMessage(self._engine.GetLangString('sent') + card.GetCardName() + self._engine.GetLangString(' to Soul.'), CHAT_OPPONENT)
+    
+    def OnOpponentCardDamageToField(self, event=None):
+        card = self._opponentcurrentcard[0]
+        x = self._opponentcurrentcard[1]
+        y = self._opponentcurrentcard[2]
+        self.MoveCard(self._opponentdamage, self._opponentfield, card)
+        card.SetCardState(POS_OPP_FIELD)
+        card.Reparent(self._opponentfieldctrl)
+        card.SetPosition(self.PositionCard(card, x, y))
+        card.Hide()
+        card.Show()
+        self.RefreshOpponentDamage()
+        self.WriteGameMessage(self._engine.GetLangString('place ') + card.GetCardName() + self._engine.GetLangString(' on the field.'), CHAT_OPPONENT)
+   
     #RFG
     def OnCardRFGPopup(self, c):
         menu = wx.Menu()
@@ -1235,7 +1570,7 @@ class GamePanel(wx.Panel):
         menu.AppendItem(item)
         self.Bind(wx.EVT_MENU, self.OnCardRFGToHand, item)
         item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Drop Zone'))
-        item.SetBitmap(self._engine.GetSkinImage('Tograve'))
+        item.SetBitmap(self._engine.GetSkinImage('ToDrop'))
         menu.AppendItem(item)
         self.Bind(wx.EVT_MENU, self.OnCardRFGToGrave, item)
         item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Deck/Shuffle'))
@@ -1308,6 +1643,28 @@ class GamePanel(wx.Panel):
         self.RefreshRFG()
         self.WriteGameMessage(self._engine.GetLangString('sent %s to his Drop Zone.', card.GetCardName()), CHAT_PLAYER)
         #self.WriteGameMessage(self._engine.GetLangString('sent ') + card.GetCardName() + self._engine.GetLangString(' to his graveyard.'), CHAT_PLAYER)
+        
+    
+    def OnCardRFGToDamage(self, event=None):
+        card = self._currentcard
+        self.WriteMoveCardPacket(card, POS_OPP_DAMAGE)
+        self.MoveCard(self._rfg, self._damage, card)
+        card.SetCardState(POS_DAMAGE)
+        card.Reparent(self._damagelistctrl)
+        self.RefreshDamage()
+        self.RefreshRFG()
+        self.WriteGameMessage(self._engine.GetLangString('sent %s to his Damage Zone.', card.GetCardName()), CHAT_PLAYER)
+      
+    def OnCardDamageToGrave(self, event=None):
+        card = self._currentcard
+        self.WriteMoveCardPacket(card, POS_OPP_GRAVE)
+        self.MoveCard(self._damage, self._grave, card)
+        card.SetCardState(POS_GRAVE)
+        card.Reparent(self._gravelistctrl)
+        self.RefreshGrave()
+        self.RefreshDamage()
+        self.WriteGameMessage(self._engine.GetLangString('sent %s to his Drop Zone.', card.GetCardName()), CHAT_PLAYER)
+        #self.WriteGameMessage(self._engine.GetLangString('sent ') + card.GetCardName() + self._engine.GetLangString(' to his graveyard.'), CHAT_PLAYER)
 
     def OnCardRFGToField(self, event=None):
         card = self._currentcard[0]
@@ -1369,6 +1726,26 @@ class GamePanel(wx.Panel):
         self.RefreshOpponentRFG()
         #self.WriteGameMessage(self._engine.GetLangString('sent ') + card.GetCardName() + self._engine.GetLangString(' to his graveyard.'), CHAT_OPPONENT)
         self.WriteGameMessage(self._engine.GetLangString('sent %s to his Drop Zone.', card.GetCardName()), CHAT_OPPONENT)
+    
+    def OnOpponentCardRFGToDamage(self, event=None):
+        card = self._opponentcurrentcard
+        self.MoveCard(self._opponentrfg, self._opponentdamage, card)
+        card.SetCardState(POS_OPP_DAMAGE)
+        card.Reparent(self._opponentdamagelistctrl)
+        self.RefreshOpponentDamage()
+        self.RefreshOpponentRFG()
+        #self.WriteGameMessage(self._engine.GetLangString('sent ') + card.GetCardName() + self._engine.GetLangString(' to his graveyard.'), CHAT_OPPONENT)
+        self.WriteGameMessage(self._engine.GetLangString('sent %s to his Damage Zone.', card.GetCardName()), CHAT_OPPONENT)
+    
+    def OnOpponentCardDamageToGrave(self, event=None):
+        card = self._opponentcurrentcard
+        self.MoveCard(self._opponentdamage, self._opponentgrave, card)
+        card.SetCardState(POS_OPP_GRAVE)
+        card.Reparent(self._opponentgravelistctrl)
+        self.RefreshOpponentGrave()
+        self.RefreshOpponentDamage()
+        #self.WriteGameMessage(self._engine.GetLangString('sent ') + card.GetCardName() + self._engine.GetLangString(' to his graveyard.'), CHAT_OPPONENT)
+        self.WriteGameMessage(self._engine.GetLangString('sent %s to his Drop Zone.', card.GetCardName()), CHAT_OPPONENT)
 
     def OnOpponentCardRFGToField(self, event=None):
         card = self._opponentcurrentcard[0]
@@ -1390,12 +1767,16 @@ class GamePanel(wx.Panel):
         item.SetBitmap(self._engine.GetSkinImage('Tohand'))
         menu.AppendItem(item)
         self.Bind(wx.EVT_MENU, self.OnCardDeckToHand, item)
+        item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Damage'))
+        item.SetBitmap(self._engine.GetSkinImage('ToDamage'))
+        menu.AppendItem(item)
+        self.Bind(wx.EVT_MENU, self.OnCardDeckToDamage, item)
         item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Drop Zone'))
-        item.SetBitmap(self._engine.GetSkinImage('Tograve'))
+        item.SetBitmap(self._engine.GetSkinImage('ToDrop'))
         menu.AppendItem(item)
         self.Bind(wx.EVT_MENU, self.OnCardDeckToGrave, item)
-        item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Extra'))
-        item.SetBitmap(self._engine.GetSkinImage('Torfg'))
+        item = wx.MenuItem(menu, -1, self._engine.GetLangString('To Soul'))
+        item.SetBitmap(self._engine.GetSkinImage('ToSoul'))
         menu.AppendItem(item)
         self.Bind(wx.EVT_MENU, self.OnCardDeckToRFG, item)
         self._currentcard = c
@@ -1422,6 +1803,17 @@ class GamePanel(wx.Panel):
         #self.WriteGameMessage(self._engine.GetLangString('sent ') + card.GetCardName() + self._engine.GetLangString(' to his graveyard.'), CHAT_PLAYER)
         self.WriteGameMessage(self._engine.GetLangString('sent %s to his Drop Zone.', card.GetCardName())+ ' ' + str(len(self._deck)) +self._engine.GetLangString(' cards left.'), CHAT_PLAYER)
 
+    def OnCardDeckToDamage(self, event=None):
+        card = self._currentcard
+        self.WriteMoveCardPacket(card, POS_OPP_DAMAGE)
+        self.MoveCard(self._deck, self._damage, card)
+        card.SetCardState(POS_DAMAGE)
+        card.Reparent(self._damagelistctrl)
+        self.RefreshDamage()
+        self.RefreshDeck()
+        #self.WriteGameMessage(self._engine.GetLangString('sent ') + card.GetCardName() + self._engine.GetLangString(' to his graveyard.'), CHAT_PLAYER)
+        self.WriteGameMessage(self._engine.GetLangString('sent %s to his Damage Zone.', card.GetCardName())+ ' ' + str(len(self._deck)) +self._engine.GetLangString(' cards left.'), CHAT_PLAYER)
+    
     def OnCardDeckToRFG(self, event=None):
         card = self._currentcard
         self.WriteMoveCardPacket(card, POS_OPP_RFG)
@@ -1430,21 +1822,21 @@ class GamePanel(wx.Panel):
         card.Reparent(self._rfglistctrl)
         self.RefreshRFG()
         self.RefreshDeck()
-        self.WriteGameMessage(self._engine.GetLangString('sent') + card.GetCardName() + self._engine.GetLangString(' to Extra.')+ ' ' + str(len(self._deck)) +self._engine.GetLangString(' cards left.'), CHAT_PLAYER)
+        self.WriteGameMessage(self._engine.GetLangString('sent') + card.GetCardName() + self._engine.GetLangString(' to Soul.')+ ' ' + str(len(self._deck)) +self._engine.GetLangString(' cards left.'), CHAT_PLAYER)
 
     def OnCardDeckToField(self, event=None):
         card = self._currentcard[0]
         x = self._currentcard[1]
         y = self._currentcard[2]
-        self.WriteMoveCardPacket(card, POS_OPP_FIELD, 0, x, y)
+        self.WriteMoveCardPacket(card, POS_OPP_FIELD, 1, x, y)
         self.MoveCard(self._deck, self._field, card)
-        card.SetCardState(POS_FIELD)
+        card.SetCardState(POS_FIELD, face= FACE_DOWN)
         card.Reparent(self._fieldctrl)
         card.SetPosition(self.PositionCard(card, x, y))
         card.Hide()
         card.Show()
         self.RefreshDeck()
-        self.WriteGameMessage(self._engine.GetLangString('place ') + card.GetCardName() + self._engine.GetLangString(' on the field.')+ ' ' + str(len(self._deck)) +self._engine.GetLangString(' cards left.'), CHAT_PLAYER)
+        self.WriteGameMessage(self._engine.GetLangString('placed Vanguard ') + self._engine.GetLangString(' on the field.')+ ' ' + str(len(self._deck)) +self._engine.GetLangString(' cards left.'), CHAT_PLAYER)
     #End
 
     # Opponent Deck
@@ -1467,6 +1859,16 @@ class GamePanel(wx.Panel):
         #self.WriteGameMessage(self._engine.GetLangString('sent ') + card.GetCardName() + self._engine.GetLangString(' to his graveyard.'), CHAT_OPPONENT)
         self.WriteGameMessage(self._engine.GetLangString('sent %s to his Drop Zone.', card.GetCardName())+ ' ' + str(len(self._opponentdeck)) +self._engine.GetLangString(' cards left.'), CHAT_OPPONENT)
 
+    def OnOpponentCardDeckToDamage(self, event=None):
+        card = self._opponentcurrentcard
+        self.MoveCard(self._opponentdeck, self._opponentdamage, card)
+        card.SetCardState(POS_OPP_DAMAGE)
+        card.Reparent(self._opponentdamagelistctrl)
+        self.RefreshOpponentDamage()
+        self.RefreshOpponentDeck()
+        #self.WriteGameMessage(self._engine.GetLangString('sent ') + card.GetCardName() + self._engine.GetLangString(' to his graveyard.'), CHAT_OPPONENT)
+        self.WriteGameMessage(self._engine.GetLangString('sent %s to his Damage Zone.', card.GetCardName())+ ' ' + str(len(self._opponentdeck)) +self._engine.GetLangString(' cards left.'), CHAT_OPPONENT)
+   
     def OnOpponentCardDeckToRFG(self, event=None):
         card = self._opponentcurrentcard
         self.MoveCard(self._opponentdeck, self._opponentrfg, card)
@@ -1474,20 +1876,20 @@ class GamePanel(wx.Panel):
         card.Reparent(self._opponentrfglistctrl)
         self.RefreshOpponentRFG()
         self.RefreshOpponentDeck()
-        self.WriteGameMessage(self._engine.GetLangString('sent') + card.GetCardName() + self._engine.GetLangString(' to Extra.')+ ' ' + str(len(self._opponentdeck)) +self._engine.GetLangString(' cards left.'), CHAT_OPPONENT)
+        self.WriteGameMessage(self._engine.GetLangString('sent') + card.GetCardName() + self._engine.GetLangString(' to Soul.')+ ' ' + str(len(self._opponentdeck)) +self._engine.GetLangString(' cards left.'), CHAT_OPPONENT)
 
     def OnOpponentCardDeckToField(self, event=None):
         card = self._opponentcurrentcard[0]
         x = self._opponentcurrentcard[1]
         y = self._opponentcurrentcard[2]
         self.MoveCard(self._opponentdeck, self._opponentfield, card)
-        card.SetCardState(POS_OPP_FIELD)
+        card.SetCardState(POS_OPP_FIELD, face=FACE_DOWN)
         card.Reparent(self._opponentfieldctrl)
         card.SetPosition(self.PositionCard(card, x, y))
         card.Hide()
         card.Show()
         self.RefreshOpponentDeck()
-        self.WriteGameMessage(self._engine.GetLangString('place ') + card.GetCardName() + self._engine.GetLangString(' on the field.')+ ' ' + str(len(self._opponentdeck)) +self._engine.GetLangString(' cards left.'), CHAT_OPPONENT)
+        self.WriteGameMessage(self._engine.GetLangString('placed Vanguard ') + self._engine.GetLangString(' on the field.')+ ' ' + str(len(self._opponentdeck)) +self._engine.GetLangString(' cards left.'), CHAT_OPPONENT)
     #End
 
     def OnDeckDClick(self, event):
@@ -1496,26 +1898,37 @@ class GamePanel(wx.Panel):
     def OnDeckRClick(self, event):
         menu = wx.Menu()
         item = wx.MenuItem(menu, -1, self._engine.GetLangString('Search Deck'))
-        item.SetBitmap(self._engine.GetSkinImage('Searchdeck'))
+        item.SetBitmap(self._engine.GetSkinImage('SearchDeck'))
         menu.AppendItem(item)
         self.Bind(wx.EVT_MENU, self.OnPopupDeckSearch, item)
         item = wx.MenuItem(menu, -1, self._engine.GetLangString('Shuffle'))
-        item.SetBitmap(self._engine.GetSkinImage('Searchdeck'))
+        item.SetBitmap(self._engine.GetSkinImage('Shuffle'))
         menu.AppendItem(item)
         self.Bind(wx.EVT_MENU, self.OnPopupDeckShuffle, item)
         item = wx.MenuItem(menu, -1, self._engine.GetLangString('Draw and Reveal'))
         item.SetBitmap(self._engine.GetSkinImage('Drawsh'))
-        
         menu.AppendItem(item)
         self.Bind(wx.EVT_MENU, self.OnPopupDeckDrawReveal, item)
+        item = wx.MenuItem(menu, -1, self._engine.GetLangString('Soulcharge Top Card'))
+        item.SetBitmap(self._engine.GetSkinImage('ToSoul'))
+        menu.AppendItem(item)
+        self.Bind(wx.EVT_MENU, self.OnPopupDeckSoulChargeTopCard, item)
         item = wx.MenuItem(menu, -1, self._engine.GetLangString('Discard Top Card'))
-        item.SetBitmap(self._engine.GetSkinImage('Tograve'))
+        item.SetBitmap(self._engine.GetSkinImage('ToDrop'))
         menu.AppendItem(item)
         self.Bind(wx.EVT_MENU, self.OnPopupDeckDiscardTopCard, item)
         item = wx.MenuItem(menu, -1, self._engine.GetLangString('Reveal Top Card'))
         item.SetBitmap(self._engine.GetSkinImage('Vert'))
         menu.AppendItem(item)
         self.Bind(wx.EVT_MENU, self.OnPopupDeckRevealTopCard, item)
+        item = wx.MenuItem(menu, -1, self._engine.GetLangString('Check Top Card'))
+        item.SetBitmap(self._engine.GetSkinImage('Vert'))
+        menu.AppendItem(item)
+        self.Bind(wx.EVT_MENU, self.OnPopupDeckCheckTopCard, item)
+        item = wx.MenuItem(menu, -1, self._engine.GetLangString('Top to Bottom'))
+        item.SetBitmap(self._engine.GetSkinImage('TopBottom'))
+        menu.AppendItem(item)
+        self.Bind(wx.EVT_MENU, self.OnPopupDeckTopCardToBottom, item)
         self.PopupMenu(menu)
     
     def OnPopupDeckDrawReveal(self, event):
@@ -1531,11 +1944,36 @@ class GamePanel(wx.Panel):
         self.WriteCardActionPacket(ACTION_DISCARDTOP)
         self.WriteGameMessage(self._engine.GetLangString('discarded ') + card.GetCardName() + self._engine.GetLangString(' from the top of his deck.')+ ' ' + str(len(self._deck)) +self._engine.GetLangString(' cards left.'), CHAT_PLAYER)
     
+    def OnPopupDeckSoulChargeTopCard(self, event):
+        card = self._deck[0]
+        self.MoveCard(self._deck, self._rfg, card)
+        card.SetCardState(POS_RFG)
+        card.Reparent(self._rfglistctrl)
+        self.RefreshRFG()
+        self.RefreshDeck()
+        self.WriteCardActionPacket(ACTION_SCTOP)
+        self.WriteGameMessage(self._engine.GetLangString('soulcharged ') + card.GetCardName() + self._engine.GetLangString(' from the top of his deck.')+ ' ' + str(len(self._deck)) +self._engine.GetLangString(' cards left.'), CHAT_PLAYER)
+        
+    
+    def OnPopupDeckTopCardToBottom(self, event):
+        card = self._deck[0]
+        self.WriteMoveCardPacket(card, POS_OPP_DECK, 4) # Bottom-Deck
+        self.MoveCardToBottom(self._deck, self._deck, card)
+        card.SetCardState(POS_DECK)
+        card.Reparent(self._decklistctrl)
+        self.RefreshDeck()
+        self.WriteGameMessage(self._engine.GetLangString('Sent top card to the bottom.')+ ' ' + str(len(self._deck)) +self._engine.GetLangString(' cards left.'), CHAT_PLAYER)
+        
     def OnPopupDeckRevealTopCard(self, event):
         card = self._deck[0]
         self.WriteCardActionPacket(ACTION_REVEALTOP)
         self.WriteGameMessage(self._engine.GetLangString('revealed ') + card.GetCardName() + self._engine.GetLangString(' from the top of his deck.'), CHAT_PLAYER)
-
+    
+    def OnPopupDeckCheckTopCard(self, event):
+        card = self._deck[0]
+        self.WriteCardActionPacket(ACTION_CHECKTOP)
+        self.WriteGameMessage(self._engine.GetLangString('Your top card is ') + card.GetCardName(), CHAT_PLAYER)
+    
     def OnPopupDeckSearch(self, event=None):
         if self._decklistctrl.IsShown():
             self._decklistctrl.Hide()
@@ -1560,9 +1998,22 @@ class GamePanel(wx.Panel):
         self.RefreshOpponentDeck()
         self.WriteGameMessage(self._engine.GetLangString('discarded ') + card.GetCardName() + self._engine.GetLangString(' from the top of his deck.')+ ' ' + str(len(self._opponentdeck)) +self._engine.GetLangString(' cards left.'), CHAT_OPPONENT)
     
+    def OnOpponentActionSCTop(self, event = None):
+        card = self._opponentdeck[0]
+        self.MoveCard(self._opponentdeck, self._opponentrfg, card)
+        card.SetCardState(POS_OPP_RFG)
+        card.Reparent(self._opponentrfglistctrl)
+        self.RefreshOpponentRFG()
+        self.RefreshOpponentDeck()
+        self.WriteGameMessage(self._engine.GetLangString('soulcharged ') + card.GetCardName() + self._engine.GetLangString(' from the top of his deck.')+ ' ' + str(len(self._opponentdeck)) +self._engine.GetLangString(' cards left.'), CHAT_OPPONENT)
+        
     def OnOpponentActionRevealTop(self, event=None):
         card = self._opponentdeck[0]
         self.WriteGameMessage(self._engine.GetLangString('revealed ') + card.GetCardName() + self._engine.GetLangString(' from the top of his deck.'), CHAT_OPPONENT)
+    
+    def OnOpponentActionCheckTop(self, event=None):
+        card = self._opponentdeck[0]
+        self.WriteGameMessage(self._engine.GetLangString('Checked top card of his deck.'), CHAT_OPPONENT)
 
     def OnGraveLClick(self, event=None):
         if self._gravelistctrl.IsShown():
@@ -1573,6 +2024,16 @@ class GamePanel(wx.Panel):
             self._gravelistctrl.Show()
             self.WriteLookPacket(LOOK_GRAVE_YES)
             self.WriteGameMessage(self._engine.GetLangString('is looking at his Drop Zone.'), CHAT_PLAYER)
+    
+    def OnDamageLClick(self, event=None):
+        if self._damagelistctrl.IsShown():
+            self._damagelistctrl.Hide()
+            self.WriteLookPacket(LOOK_DAMAGE_NO)
+            self.WriteGameMessage(self._engine.GetLangString('end looking at his Damage Zone.'), CHAT_PLAYER)
+        else:
+            self._damagelistctrl.Show()
+            self.WriteLookPacket(LOOK_DAMAGE_YES)
+            self.WriteGameMessage(self._engine.GetLangString('is looking at his Damage Zone.'), CHAT_PLAYER)
 
     def OnOpponentGraveLClick(self, event=None):
         if self._opponentgravelistctrl.IsShown():
@@ -1583,6 +2044,16 @@ class GamePanel(wx.Panel):
             self._opponentgravelistctrl.Show()
             self.WriteLookPacket(LOOK_OPPONENT_GRAVE_YES)
             self.WriteGameMessage(self._engine.GetLangString("is looking at his opponent's Drop Zone."), CHAT_PLAYER)
+    
+    def OnOpponentDamageLClick(self, event=None):
+        if self._opponentdamagelistctrl.IsShown():
+            self._opponentdamagelistctrl.Hide()
+            self.WriteLookPacket(LOOK_OPPONENT_DAMAGE_NO)
+            self.WriteGameMessage(self._engine.GetLangString("end looking at his opponent's Damage Zone."), CHAT_PLAYER)
+        else:
+            self._opponentdamagelistctrl.Show()
+            self.WriteLookPacket(LOOK_OPPONENT_DAMAGE_YES)
+            self.WriteGameMessage(self._engine.GetLangString("is looking at his opponent's Damage Zone."), CHAT_PLAYER)
 
     def OnNewNote(self, event):
         pos = self._fieldctrl.ScreenToClient(wx.GetMousePosition())
@@ -1600,7 +2071,7 @@ class GamePanel(wx.Panel):
         self.WritePacket(packets.DrawPacket(reveal))
         if reveal:
             c.SetCardState(POS_HAND, face=FACE_DOWN)
-            self.WriteGameMessage(self._engine.GetLangString('drew ') + c.GetCardName() + '.'+ ' ' + str(len(self._deck)) +self._engine.GetLangString(' cards left.'), CHAT_PLAYER)
+            self.WriteGameMessage(self._engine.GetLangString('drew ') + c.GetCardName() + '. ' + c.GetCardTrigger()+ '. \n' + str(len(self._deck)) +self._engine.GetLangString(' cards left.'), CHAT_PLAYER)
         else:
             self.WriteGameMessage(self._engine.GetLangString('drew a card.') + ' ' + str(len(self._deck)) +self._engine.GetLangString(' cards left.'), CHAT_PLAYER)
 
@@ -1609,6 +2080,8 @@ class GamePanel(wx.Panel):
     
     def OnHandHide(self):
         c.SetCardState(POS_HAND, face=FACE_UP)
+        self.RefreshHand()
+        
 
     def OnOpponentDeckDraw(self, reveal=0):
         c = self.RemoveCardFromTop(self._opponentdeck)
@@ -1619,12 +2092,14 @@ class GamePanel(wx.Panel):
         self.RefreshOpponentDeck()
         if reveal:
             c.SetCardState(POS_OPP_HAND, face=FACE_UP)
-            self.WriteGameMessage(self._engine.GetLangString('drew ') + c.GetCardName() + '.'+ ' ' + str(len(self._opponentdeck)) +self._engine.GetLangString(' cards left.'), CHAT_OPPONENT)
+            self.WriteGameMessage(self._engine.GetLangString('drew ') + c.GetCardName() + '. '+ c.GetCardTrigger() + '. \n' + str(len(self._opponentdeck)) +self._engine.GetLangString(' cards left.'), CHAT_OPPONENT)
         else:
             self.WriteGameMessage(self._engine.GetLangString('drew a card.')+ ' ' + str(len(self._opponentdeck)) +self._engine.GetLangString(' cards left.'), CHAT_OPPONENT)
     
-    def OnOpponentHandHide(seld):
-        c.SetCardState(POS_OPP_HAND, face=FACE_DOWN)
+    def OnOpponentHandShuffle(self):
+        for c in self._opponenthand:
+            c.SetCardState(POS_OPP_HAND, face=FACE_DOWN)
+        self.RefreshOpponentHand()
     
     def OnCardFieldMove(self, c, x, y):
         c.SetPosition(self.PositionCard(c, x, y))
@@ -1639,45 +2114,44 @@ class GamePanel(wx.Panel):
         
     def PositionCard(self, card, x, y):
         adj = True
-        if self.Hit(x, y, wx.Rect(11,97,96,96)):
-            x = 11
-            y = 97
-        elif self.Hit(x, y, wx.Rect(108,97,96,96)):
+        if self.Hit(x, y, wx.Rect(108,48,96,96)):
             x = 108
-            y = 97
-        elif self.Hit(x, y, wx.Rect(205,97,96,96)):
+            y = 48
+        elif self.Hit(x, y, wx.Rect(205,48,96,96)):
             x = 205
-            y = 97
-        elif self.Hit(x, y, wx.Rect(302,97,96,96)):
+            y = 48
+        elif self.Hit(x, y, wx.Rect(302,48,96,96)):
             x = 302
-            y = 97
-        elif self.Hit(x, y, wx.Rect(399,97,96,96)):
+            y = 48
+        elif self.Hit(x, y, wx.Rect(399,48,96,96)):
             x = 399
-            y = 97
-        elif self.Hit(x, y, wx.Rect(496,97,96,96)):
+            y = 48
+        elif self.Hit(x, y, wx.Rect(496,48,96,96)):
             x = 496
-            y = 97
-        elif self.Hit(x, y, wx.Rect(11,193,96,96)):
-            x = 11
-            y = 193
-        elif self.Hit(x, y, wx.Rect(108,193,96,96)):
+            y = 48
+        elif self.Hit(x, y, wx.Rect(108,145,96,96)):
             x = 108
-            y = 193
-        elif self.Hit(x, y, wx.Rect(205,193,96,96)):
+            y = 145
+        elif self.Hit(x, y, wx.Rect(205,145,96,96)):
             x = 205
-            y = 193
-        elif self.Hit(x, y, wx.Rect(302,193,96,96)):
+            y = 145
+        elif self.Hit(x, y, wx.Rect(302,145,96,96)):
             x = 302
-            y = 193
-        elif self.Hit(x, y, wx.Rect(399,193,96,96)):
+            y = 145
+        elif self.Hit(x, y, wx.Rect(399,145,96,96)):
             x = 399
-            y = 193
-        elif self.Hit(x, y, wx.Rect(496,193,96,96)):
+            y = 145
+        elif self.Hit(x, y, wx.Rect(496,145,96,96)):
             x = 496
-            y = 193
-        elif self.Hit(x, y, wx.Rect(399,0,96,96)):
-            x = 399
-            y = 0
+            y = 145
+        elif self.Hit(x, y, wx.Rect(21,33,60,88)) and type(card) is CardControl:
+            x = 21
+            y = 33
+            adj = False
+        elif self.Hit(x, y, wx.Rect(618,168,60,88)) and type(card) is OpponentCardControl:
+            x = 618
+            y = 168
+            adj = False
         else:
             x -= 30
             y -= 44
@@ -1699,12 +2173,16 @@ class GamePanel(wx.Panel):
             self.OnCardDropOnGrave(x, y, data)
         elif self.Hit(x, y, self._rfgctrl.GetRect()):
             self.OnCardDropOnRFG(x, y, data)
+        elif self.Hit(x, y, self._damagectrl.GetRect()):
+            self.OnCardDropOnDamage(x, y, data)
         elif self.Hit(x, y, wx.Rect(0,0,self._fieldctrl.GetSize().GetWidth(),self._fieldctrl.GetSize().GetHeight())):
             self._currentcard = (c,x,y)
             if c.GetCardPosition() == POS_FIELD:
                 self.OnCardFieldMove(c, x, y)
             elif c.GetCardPosition() == POS_GRAVE:
                 self.OnCardGraveToField()
+            elif c.GetCardPosition() == POS_DAMAGE:
+                self.OnCardDamageToField()
             elif c.GetCardPosition() == POS_RFG:
                 self.OnCardRFGToField()
             elif c.GetCardPosition() == POS_HAND:
@@ -1728,6 +2206,20 @@ class GamePanel(wx.Panel):
             self.OnCardDeckToGrave()
         elif c.GetCardPosition() == POS_RFG:
             self.OnCardRFGToGrave()
+        elif c.GetCardPosition() == POS_DAMAGE:
+            self.OnCardDamageToGrave()
+    
+    def OnCardDropOnDamage(self, x, y, data):
+        c = self.GetCardFromSerial(data)
+        self._currentcard = c
+        if c.GetCardPosition() == POS_HAND:
+            self.OnCardHandToDamage()
+        elif c.GetCardPosition() == POS_FIELD:
+            self.OnCardFieldToDamage()
+        elif c.GetCardPosition() == POS_DECK:
+            self.OnCardDeckToDamage()
+        elif c.GetCardPosition() == POS_RFG:
+            self.OnCardRFGToDamage()
 
     def OnCardDropOnRFG(self, x, y, data):
         c = self.GetCardFromSerial(data)
@@ -1740,6 +2232,8 @@ class GamePanel(wx.Panel):
             self.OnCardDeckToRFG()
         elif c.GetCardPosition() == POS_GRAVE:
             self.OnCardGraveToRFG()
+        elif c.GetCardPosition() == POS_DAMAGE:
+            self.OnCardDamageToRFG()
 
     def OnCardDropOnHand(self, x, y, data):
         c = self.GetCardFromSerial(data)
@@ -1748,6 +2242,8 @@ class GamePanel(wx.Panel):
             self.OnCardFieldToHand()
         elif c.GetCardPosition() == POS_GRAVE:
             self.OnCardGraveToHand()
+        elif c.GetCardPosition() == POS_DAMAGE:
+            self.OnCardDamageToHand()
         elif c.GetCardPosition() == POS_RFG:
             self.OnCardRFGToHand()
         elif c.GetCardPosition() == POS_DECK:
@@ -1759,17 +2255,24 @@ class GamePanel(wx.Panel):
         n = len(l)
         if n == 0:
             return
+        x_pos = 0
+        x_move = 64
         y_pos = 0
-        y_move = 12
+        y_move = 90
+        xtmp = 0
+        ytmp = 0
         self._gravelistctrl.Scroll.Scroll(0,0)
         for c in l:
+            if xtmp == 10:
+                xtmp = 0
+                ytmp = ytmp+1
             c.RefreshTexture()
-            c.SetPosition((0,y_pos))
+            c.SetPosition((x_move*xtmp,ytmp*y_move))
             c.Reparent(self._gravelistctrl.Scroll)
             c.Hide()
             c.Show()
-            y_pos += y_move
-        self._gravelistctrl.Scroll.SetScrollbars(0, 12, 0, n)
+            xtmp= xtmp+1
+        self._gravelistctrl.Scroll.SetScrollbars(0, 11, 0, n)
 
     def RefreshOpponentGrave(self):
         self._opponentgravectrl.UpdateCardTooltip(self._opponentgrave)
@@ -1777,17 +2280,74 @@ class GamePanel(wx.Panel):
         n = len(l)
         if n == 0:
             return
+        x_pos = 0
+        x_move = 64
         y_pos = 0
-        y_move = 12
+        y_move = 90
+        xtmp = 0
+        ytmp = 0
         self._opponentgravelistctrl.Scroll.Scroll(0,0)
         for c in l:
+            if xtmp == 10:
+                xtmp = 0
+                ytmp = ytmp+1
             c.RefreshTexture()
-            c.SetPosition((0,y_pos))
+            c.SetPosition((x_move*xtmp,ytmp*y_move))
             c.Reparent(self._opponentgravelistctrl.Scroll)
             c.Hide()
             c.Show()
-            y_pos += y_move
-        self._opponentgravelistctrl.Scroll.SetScrollbars(0, 12, 0, n)
+            xtmp= xtmp+1
+        self._opponentgravelistctrl.Scroll.SetScrollbars(0, 11, 0, n)
+    
+    def RefreshDamage(self):
+        self._damagectrl.UpdateCardTooltip(self._damage)
+        l = self._damage
+        n = len(l)
+        if n == 0:
+            return
+        x_pos = 0
+        x_move = 64
+        y_pos = 0
+        y_move = 90
+        xtmp = 0
+        ytmp = 0
+        self._damagelistctrl.Scroll.Scroll(0,0)
+        for c in l:
+            if xtmp == 10:
+                xtmp = 0
+                ytmp = ytmp+1
+            c.RefreshTexture()
+            c.SetPosition((x_move*xtmp,ytmp*y_move))
+            c.Reparent(self._damagelistctrl.Scroll)
+            c.Hide()
+            c.Show()
+            xtmp= xtmp+1
+        self._damagelistctrl.Scroll.SetScrollbars(0, 11, 0, n)
+
+    def RefreshOpponentDamage(self):
+        self._opponentdamagectrl.UpdateCardTooltip(self._opponentdamage)
+        l = self._opponentdamage
+        n = len(l)
+        if n == 0:
+            return
+        x_pos = 0
+        x_move = 64
+        y_pos = 0
+        y_move = 90
+        xtmp = 0
+        ytmp = 0
+        self._opponentdamagelistctrl.Scroll.Scroll(0,0)
+        for c in l:
+            if xtmp == 10:
+                xtmp = 0
+                ytmp = ytmp+1
+            c.RefreshTexture()
+            c.SetPosition((x_move*xtmp,ytmp*y_move))
+            c.Reparent(self._opponentdamagelistctrl.Scroll)
+            c.Hide()
+            c.Show()
+            xtmp= xtmp+1
+        self._opponentdamagelistctrl.Scroll.SetScrollbars(0, 11, 0, n)
 
     def RefreshRFG(self):
         self._rfgctrl.UpdateCardTooltip(self._rfg)
@@ -1795,17 +2355,24 @@ class GamePanel(wx.Panel):
         n = len(l)
         if n == 0:
             return
+        x_pos = 0
+        x_move = 64
         y_pos = 0
-        y_move = 12
+        y_move = 90
+        xtmp = 0
+        ytmp = 0
         self._rfglistctrl.Scroll.Scroll(0,0)
         for c in l:
+            if xtmp == 10:
+                xtmp = 0
+                ytmp = ytmp+1
             c.RefreshTexture()
-            c.SetPosition((0,y_pos))
+            c.SetPosition((x_move*xtmp,ytmp*y_move))
             c.Reparent(self._rfglistctrl.Scroll)
             c.Hide()
             c.Show()
-            y_pos += y_move
-        self._rfglistctrl.Scroll.SetScrollbars(0, 12, 0, n)
+            xtmp= xtmp+1
+        self._rfglistctrl.Scroll.SetScrollbars(0, 11, 0, n)
 
     def RefreshOpponentRFG(self):
         l = self._opponentrfg
@@ -1813,34 +2380,49 @@ class GamePanel(wx.Panel):
         n = len(l)
         if n == 0:
             return
+        x_pos = 0
+        x_move = 64
         y_pos = 0
-        y_move = 12
+        y_move = 90
+        xtmp = 0
+        ytmp = 0
         self._opponentrfglistctrl.Scroll.Scroll(0,0)
         for c in l:
+            if xtmp == 10:
+                xtmp = 0
+                ytmp = ytmp+1
             c.RefreshTexture()
-            c.SetPosition((0,y_pos))
+            c.SetPosition((x_move*xtmp,ytmp*y_move))
             c.Reparent(self._opponentrfglistctrl.Scroll)
             c.Hide()
             c.Show()
-            y_pos += y_move
-        self._opponentrfglistctrl.Scroll.SetScrollbars(0, 12, 0, n)
+            xtmp= xtmp+1
+        self._opponentrfglistctrl.Scroll.SetScrollbars(0, 11, 0, n)
 
     def RefreshDeck(self):
         l = self._deck
         n = len(l)
         if n == 0:
             return
+        x_pos = 0
+        x_move = 64
         y_pos = 0
-        y_move = 12
+        y_move = 90
         self._decklistctrl.Scroll.Scroll(0,0)
+        xtmp = 0
+        ytmp = 0
         for c in l:
+            if xtmp == 10:
+                xtmp = 0
+                ytmp = ytmp+1
             c.RefreshTexture()
-            c.SetPosition((0,y_pos))
+            c.SetPosition((x_move*xtmp,ytmp*y_move))
             c.Reparent(self._decklistctrl.Scroll)
             c.Hide()
             c.Show()
-            y_pos += y_move
-        self._decklistctrl.Scroll.SetScrollbars(0, 12, 0, n)
+            xtmp= xtmp+1
+        self._decklistctrl.Scroll.SetScrollbars(0, 11, 0, n)
+        self._deckcounttext.SetLabel(str(len(self._deck)))
 
     def RefreshOpponentDeck(self):
         l = self._opponentdeck
@@ -2144,6 +2726,8 @@ class GamePanel(wx.Panel):
             self.RefreshGrave()()
         elif pos == POS_DECK:
             self.RefreshDeck()
+        elif pos == POS_DAMAGE:
+            self.RefreshDamage()
         elif pos == POS_RFG:
             self.RefreshRFG()
 
@@ -2154,6 +2738,8 @@ class GamePanel(wx.Panel):
             return self._hand
         elif pos == POS_GRAVE:
             return self._grave
+        elif pos == POS_DAMAGE:
+            return self._damage
         elif pos == POS_DECK:
             return self._deck
         elif pos == POS_RFG:
@@ -2164,6 +2750,8 @@ class GamePanel(wx.Panel):
             return self._opponenthand
         elif pos == POS_OPP_GRAVE:
             return self._opponentgrave
+        elif pos == POS_OPP_DAMAGE:
+            return self._opponentdamage
         elif pos == POS_OPP_DECK:
             return self._opponentdeck
         elif pos == POS_OPP_RFG:
@@ -2172,6 +2760,9 @@ class GamePanel(wx.Panel):
 
     def GetCardFromSerial(self, serial):
         for c in self._grave:
+            if c.GetSerial() == serial:
+                return c
+        for c in self._damage:
             if c.GetSerial() == serial:
                 return c
         for c in self._field:
@@ -2195,6 +2786,9 @@ class GamePanel(wx.Panel):
 
     def GetOpponentCardFromSerial(self, serial):
         for c in self._opponentgrave:
+            if c.GetSerial() == serial:
+                return c
+        for c in self._opponentdamage:
             if c.GetSerial() == serial:
                 return c
         for c in self._opponentfield:
@@ -2269,6 +2863,8 @@ class GamePanel(wx.Panel):
         self.WriteShufflePacket()
     
     def ShuffleHand(self):
+        for c in self._hand:
+            c.SetCardState(POS_HAND, face=FACE_UP)
         random.shuffle(self._hand)
         self.RefreshHand()
         self.WriteGameMessage(self._engine.GetLangString('shuffled his hand.'), CHAT_PLAYER)
@@ -2285,6 +2881,13 @@ class GamePanel(wx.Panel):
         while len(self._grave) > 0:
             c = self._grave[0]
             self.MoveCard(self._grave, self._deck, c)
+            c.SetCardState(POS_DECK)
+            c.Reparent(self._decklistctrl)
+            c.Hide()
+            c.Show()
+        while len(self._damage) > 0:
+            c = self._damage[0]
+            self.MoveCard(self._damage, self._deck, c)
             c.SetCardState(POS_DECK)
             c.Reparent(self._decklistctrl)
             c.Hide()
@@ -2324,6 +2927,13 @@ class GamePanel(wx.Panel):
             c.Reparent(self._opponentdecklistctrl)
             c.Hide()
             c.Show()
+        while len(self._opponentdamage) > 0:
+            c = self._opponentdamage[0]
+            self.MoveCard(self._opponentdamage, self._opponentdeck, c)
+            c.SetCardState(POS_OPP_DECK)
+            c.Reparent(self._opponentdecklistctrl)
+            c.Hide()
+            c.Show()
         while len(self._opponentrfg) > 0:
             c = self._opponentrfg[0]
             self.MoveCard(self._opponentrfg, self._opponentdeck, c)
@@ -2345,12 +2955,14 @@ class GamePanel(wx.Panel):
     def RefreshAll(self):
         self.RefreshHand()
         self.RefreshGrave()
+        self.RefreshDamage()
         self.RefreshRFG()
         self.RefreshDeck()
 
     def RefreshOpponentAll(self):
         self.RefreshOpponentHand()
         self.RefreshOpponentGrave()
+        self.RefreshOpponentDamage()
         self.RefreshOpponentRFG()
         self.RefreshOpponentDeck()
 
@@ -2470,6 +3082,8 @@ class GamePanel(wx.Panel):
             except:
                break
         self._opponenthand = l
+        for c in self._opponenthand:
+            c.SetCardState(POS_OPP_HAND, face=FACE_DOWN)
         self.RefreshOpponentHand()
         self.WriteGameMessage(self._engine.GetLangString('shuffled his hand'), CHAT_OPPONENT)
     
@@ -2497,10 +3111,16 @@ class GamePanel(wx.Panel):
                     self.OnOpponentCardHandToBottomDeck()
                 elif dest2 == 1: # Top Deck
                     self.OnOpponentCardHandToTopDeck()
+                elif dest2 == 4: # Bottom Hidden
+                    self.OnOpponentCardHandToBottomDeckH()
+                elif dest2 == 3: # Top Deck Hidden
+                    self.OnOpponentCardHandToTopDeckH()
                 else: # Deck
                     self.OnOpponentCardHandToDeckShuffle()
             elif dest == POS_OPP_GRAVE: # Grave
                 self.OnOpponentCardHandToGrave()
+            elif dest == POS_OPP_DAMAGE:
+                self.OnOpponentCardHandToDamage()
             elif dest == POS_OPP_RFG: # RFG
                 self.OnOpponentCardHandToRFG()
             elif dest == POS_OPP_FIELD: # Field
@@ -2522,6 +3142,8 @@ class GamePanel(wx.Panel):
                 self.OnOpponentCardFieldToHand()
             elif dest == POS_OPP_GRAVE:
                 self.OnOpponentCardFieldToGrave()
+            elif dest == POS_OPP_DAMAGE:
+                self.OnOpponentCardFieldToDamage()
             elif dest == POS_OPP_RFG:
                 self.OnOpponentCardFieldToRFG()
             elif dest == POS_OPP_DECK:
@@ -2543,6 +3165,8 @@ class GamePanel(wx.Panel):
                 self.OnOpponentCardGraveToHand()
             elif dest == POS_OPP_RFG:
                 self.OnOpponentCardGraveToRFG()
+            elif dest == POS_OPP_DAMAGE:
+                self.OnOpponentCardGraveToDamage()
             elif dest == POS_OPP_DECK:
                 dest2 = reader.ReadInt()
                 if dest2 == 0:
@@ -2557,11 +3181,34 @@ class GamePanel(wx.Panel):
                 y = reader.ReadInt()
                 self._opponentcurrentcard = [card,x,y]
                 self.OnOpponentCardGraveToField()
+        elif pos == POS_OPP_DAMAGE:
+            if dest == POS_OPP_HAND:
+                self.OnOpponentCardDamageToHand()
+            elif dest == POS_OPP_RFG:
+                self.OnOpponentCardDamageToRFG()
+            elif dest == POS_OPP_GRAVE:
+                self.OnOpponentCardDamageToGrave()
+            elif dest == POS_OPP_DECK:
+                dest2 = reader.ReadInt()
+                if dest2 == 0:
+                    self.OnOpponentCardDamageToBottomDeck()
+                elif dest2 == 1:
+                    self.OnOpponentCardDamageToTopDeck()
+                elif dest2 == 2:
+                    self.OnOpponentCardDamageToDeckShuffle()
+            elif dest == POS_OPP_FIELD:
+                dest2 = reader.ReadInt()
+                x = reader.ReadInt()
+                y = reader.ReadInt()
+                self._opponentcurrentcard = [card,x,y]
+                self.OnOpponentCardDamageToField()
         elif pos == POS_OPP_RFG:
             if dest == POS_OPP_HAND:
                 self.OnOpponentCardRFGToHand()
             elif dest == POS_OPP_GRAVE:
                 self.OnOpponentCardRFGToGrave()
+            elif dest == POS_OPP_DAMAGE:
+                self.OnOpponentCardRFGToDamage()
             elif dest == POS_OPP_DECK:
                 dest2 = reader.ReadInt()
                 if dest2 == 0:
@@ -2581,6 +3228,14 @@ class GamePanel(wx.Panel):
                 self.OnOpponentCardDeckToHand()
             elif dest == POS_OPP_GRAVE:
                 self.OnOpponentCardDeckToGrave()
+            elif dest == POS_OPP_DECK: # Deck
+                    dest2 = reader.ReadInt()
+                    if dest2 == 4: # Bottom Hidden
+                        self.OnOpponentCardHandToBottomDeckH2()
+                    elif dest2 == 3: # Top Deck Hidden
+                        self.OnOpponentCardHandToTopDeckH2()
+            elif dest == POS_OPP_DAMAGE:
+                self.OnOpponentCardDeckToDamage()
             elif dest == POS_OPP_RFG:
                 self.OnOpponentCardDeckToRFG()
             elif dest == POS_OPP_FIELD:
@@ -2680,18 +3335,26 @@ class GamePanel(wx.Panel):
             self.WriteGameMessage(self._engine.GetLangString('is looking at his Drop Zone'), CHAT_OPPONENT)
         elif n == LOOK_GRAVE_NO:
             self.WriteGameMessage(self._engine.GetLangString('end looking at his Drop Zone'), CHAT_OPPONENT)
+        elif n == LOOK_DAMAGE_YES:
+            self.WriteGameMessage(self._engine.GetLangString('is looking at his Damage Zone'), CHAT_OPPONENT)
+        elif n == LOOK_DAMAGE_NO:
+            self.WriteGameMessage(self._engine.GetLangString('end looking at his Damage Zone'), CHAT_OPPONENT)
         elif n == LOOK_RFG_YES:
-            self.WriteGameMessage(self._engine.GetLangString('is looking at his Extra'), CHAT_OPPONENT)
+            self.WriteGameMessage(self._engine.GetLangString('is looking at his Soul'), CHAT_OPPONENT)
         elif n == LOOK_RFG_NO:
-            self.WriteGameMessage(self._engine.GetLangString('end looking at his Extra'), CHAT_OPPONENT)
+            self.WriteGameMessage(self._engine.GetLangString('end looking at his Soul'), CHAT_OPPONENT)
         elif n == LOOK_OPPONENT_GRAVE_YES:
             self.WriteGameMessage(self._engine.GetLangString("is looking at his opponent's Drop Zone"), CHAT_OPPONENT)
         elif n == LOOK_OPPONENT_GRAVE_NO:
             self.WriteGameMessage(self._engine.GetLangString("end looking at his opponent's Drop Zone"), CHAT_OPPONENT)
+        elif n == LOOK_OPPONENT_DAMAGE_YES:
+            self.WriteGameMessage(self._engine.GetLangString("is looking at his opponent's Damage Zone"), CHAT_OPPONENT)
+        elif n == LOOK_OPPONENT_DAMAGE_NO:
+            self.WriteGameMessage(self._engine.GetLangString("end looking at his opponent's Damage Zone"), CHAT_OPPONENT)
         elif n == LOOK_OPPONENT_RFG_YES:
-            self.WriteGameMessage(self._engine.GetLangString("is looking at his opponent's Extra"), CHAT_OPPONENT)
+            self.WriteGameMessage(self._engine.GetLangString("is looking at his opponent's Soul"), CHAT_OPPONENT)
         elif n == LOOK_OPPONENT_RFG_NO:
-            self.WriteGameMessage(self._engine.GetLangString("end looking at his opponent's Extra"), CHAT_OPPONENT)
+            self.WriteGameMessage(self._engine.GetLangString("end looking at his opponent's Soul"), CHAT_OPPONENT)
 
     def OnCardActionPacket(self, event):
         reader = event.data
@@ -2700,6 +3363,10 @@ class GamePanel(wx.Panel):
             self.OnOpponentActionDiscardTop()
         elif action == ACTION_REVEALTOP:
             self.OnOpponentActionRevealTop()
+        elif action == ACTION_CHECKTOP:
+            self.OnOpponentActionCheckTop()
+        elif action == ACTION_SCTOP:
+            self.OnOpponentActionSCTop()
 
     def OnCardCounterPacket(self, event):
         reader = event.data
@@ -2749,7 +3416,7 @@ class OpponentFieldControl(wx.Panel):
 class DeckListControl(wx.Frame):
     def __init__(self, parent):
         self._game = parent
-        wx.Frame.__init__(self, parent, -1, 'Deck', pos=(400,300), size=(168,200), style=wx.FRAME_TOOL_WINDOW | wx.FRAME_FLOAT_ON_PARENT | wx.CAPTION | wx.CLOSE_BOX | wx.SYSTEM_MENU)
+        wx.Frame.__init__(self, parent, -1, 'Deck', pos=(400,300), size=(670,300), style=wx.FRAME_TOOL_WINDOW | wx.FRAME_FLOAT_ON_PARENT | wx.CAPTION | wx.CLOSE_BOX | wx.SYSTEM_MENU)
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.Scroll = wx.ScrolledWindow(self,-1)
         self.Scroll.SetScrollbars(0, 1, 0, 200)
@@ -2760,7 +3427,7 @@ class DeckListControl(wx.Frame):
 
 class OpponentDeckListControl(wx.Frame):
     def __init__(self, parent):
-        wx.Frame.__init__(self, parent, -1, 'Opponent Deck', pos=(400,300), size=(168,200), style=wx.FRAME_TOOL_WINDOW | wx.FRAME_FLOAT_ON_PARENT | wx.CAPTION | wx.CLOSE_BOX | wx.SYSTEM_MENU)
+        wx.Frame.__init__(self, parent, -1, 'Opponent Deck', pos=(400,300), size=(670,300), style=wx.FRAME_TOOL_WINDOW | wx.FRAME_FLOAT_ON_PARENT | wx.CAPTION | wx.CLOSE_BOX | wx.SYSTEM_MENU)
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.Scroll = wx.ScrolledWindow(self,-1)
         self.Scroll.SetScrollbars(0, 1, 0, 200)
@@ -2780,7 +3447,7 @@ class OpponentDeckListControl(wx.Frame):
 
 class OpponentGraveListControl(wx.Frame):
     def __init__(self, parent):
-        wx.Frame.__init__(self, parent, -1, 'Opponent Drop Zone', pos=(400,300), size=(168,200), style=wx.FRAME_TOOL_WINDOW | wx.FRAME_FLOAT_ON_PARENT | wx.CAPTION | wx.CLOSE_BOX | wx.SYSTEM_MENU)
+        wx.Frame.__init__(self, parent, -1, 'Opponent Drop Zone', pos=(400,300), size=(670,300), style=wx.FRAME_TOOL_WINDOW | wx.FRAME_FLOAT_ON_PARENT | wx.CAPTION | wx.CLOSE_BOX | wx.SYSTEM_MENU)
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.Scroll = wx.ScrolledWindow(self,-1)
         self.Scroll.SetScrollbars(0, 1, 0, 200)
@@ -2789,9 +3456,20 @@ class OpponentGraveListControl(wx.Frame):
     def OnClose(self, event=None):
         self.Parent.OnOpponentGraveLClick()
 
+class OpponentDamageListControl(wx.Frame):
+    def __init__(self, parent):
+        wx.Frame.__init__(self, parent, -1, 'Opponent Damage Zone', pos=(400,300), size=(400,130), style=wx.FRAME_TOOL_WINDOW | wx.FRAME_FLOAT_ON_PARENT | wx.CAPTION | wx.CLOSE_BOX | wx.SYSTEM_MENU)
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
+        self.Scroll = wx.ScrolledWindow(self,-1)
+        self.Scroll.SetScrollbars(0, 1, 0, 200)
+        self.Scroll.SetBackgroundColour(wx.Colour(33,35,36))
+
+    def OnClose(self, event=None):
+        self.Parent.OnOpponentDamageLClick()
+
 class GraveListControl(wx.Frame):
     def __init__(self, parent):
-        wx.Frame.__init__(self, parent, -1, 'Drop Zone', pos=(400,300), size=(168,200), style=wx.FRAME_TOOL_WINDOW | wx.FRAME_FLOAT_ON_PARENT | wx.CAPTION | wx.CLOSE_BOX | wx.SYSTEM_MENU)
+        wx.Frame.__init__(self, parent, -1, 'Drop Zone', pos=(400,300), size=(670,300), style=wx.FRAME_TOOL_WINDOW | wx.FRAME_FLOAT_ON_PARENT | wx.CAPTION | wx.CLOSE_BOX | wx.SYSTEM_MENU)
         self.SetDropTarget(GraveListDropTarget(parent))
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.Scroll = wx.ScrolledWindow(self,-1)
@@ -2800,7 +3478,19 @@ class GraveListControl(wx.Frame):
 
     def OnClose(self, event=None):
         self.Parent.OnGraveLClick()
-        
+    
+class DamageListControl(wx.Frame):
+    def __init__(self, parent):
+        wx.Frame.__init__(self, parent, -1, 'Damage Zone', pos=(400,300), size=(400,130), style=wx.FRAME_TOOL_WINDOW | wx.FRAME_FLOAT_ON_PARENT | wx.CAPTION | wx.CLOSE_BOX | wx.SYSTEM_MENU)
+        self.SetDropTarget(DamageListDropTarget(parent))
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
+        self.Scroll = wx.ScrolledWindow(self,-1)
+        self.Scroll.SetScrollbars(0, 1, 0, 200)
+        self.Scroll.SetBackgroundColour(wx.Colour(33,35,36))
+
+    def OnClose(self, event=None):
+        self.Parent.OnDamageLClick()
+    
 class GraveListDropTarget(wx.TextDropTarget):
     def __init__(self, game):
         wx.TextDropTarget.__init__(self)
@@ -2808,10 +3498,18 @@ class GraveListDropTarget(wx.TextDropTarget):
     
     def OnDropText(self, x, y, data):
         self._game.OnCardDropOnGrave(x, y, data)
-
+    
+class DamageListDropTarget(wx.TextDropTarget):
+    def __init__(self, game):
+        wx.TextDropTarget.__init__(self)
+        self._game = game
+    
+    def OnDropText(self, x, y, data):
+        self._game.OnCardDropOnDamage(x, y, data)
+    
 class OpponentRFGListControl(wx.Frame):
     def __init__(self, parent):
-        wx.Frame.__init__(self, parent, -1, 'Opponent Extra', pos=(400,300), size=(168,200), style=wx.FRAME_TOOL_WINDOW | wx.FRAME_FLOAT_ON_PARENT | wx.CAPTION | wx.CLOSE_BOX | wx.SYSTEM_MENU)
+        wx.Frame.__init__(self, parent, -1, 'Opponent Soul', pos=(400,300), size=(670,300), style=wx.FRAME_TOOL_WINDOW | wx.FRAME_FLOAT_ON_PARENT | wx.CAPTION | wx.CLOSE_BOX | wx.SYSTEM_MENU)
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.Scroll = wx.ScrolledWindow(self,-1)
         self.Scroll.SetScrollbars(0, 1, 0, 200)
@@ -2825,7 +3523,7 @@ class OpponentRFGListControl(wx.Frame):
 
 class RFGListControl(wx.Frame):
     def __init__(self, parent):
-        wx.Frame.__init__(self, parent, -1, 'Extra', pos=(400,300), size=(168,200), style=wx.FRAME_TOOL_WINDOW | wx.FRAME_FLOAT_ON_PARENT | wx.CAPTION | wx.CLOSE_BOX | wx.SYSTEM_MENU)
+        wx.Frame.__init__(self, parent, -1, 'Soul', pos=(400,300), size=(670,300), style=wx.FRAME_TOOL_WINDOW | wx.FRAME_FLOAT_ON_PARENT | wx.CAPTION | wx.CLOSE_BOX | wx.SYSTEM_MENU)
         self.SetDropTarget(RFGListDropTarget(parent))
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.Scroll = wx.ScrolledWindow(self,-1)
@@ -2883,6 +3581,38 @@ class GraveControl(GameObject):
         self.Hide()
         self.Show()
 
+class DamageControl(GameObject):
+    def __init__(self, parent, pos, t, game):
+        self._game = game
+        GameObject.__init__(self, parent, pos, t)
+
+    def OnPaint(self, event):
+        dc = wx.PaintDC(self)
+        dc.Clear()
+        if len(self._game._damage) > 0:
+            dc.DrawBitmap(self._game._engine.GetCardGraveImage(self._game._damage[0]), 1, 1, True)
+        else:
+            dc.SetBrush(wx.Brush(wx.Colour(33,35,36)))
+            dc.SetPen(wx.Pen(wx.Colour(33,35,36)))
+            dc.DrawRectangle(0,0,self._texture.GetWidth(), self._texture.GetHeight())
+        dc.DrawBitmap(self._texture, 0, 0, True)
+
+    def UpdateCardTooltip(self, l):
+        d = 0
+        s = 'Damage: ' + str(len(l))
+        if len(l) > 10:
+            l = l[:11]
+            d = 1
+        for c in l:
+            s += '\n' + c.GetCardName()
+        if d:
+            s += '\n...'
+        tip = wx.ToolTip(s)
+        tip.SetDelay(250)
+        self.SetToolTip(tip)
+        self.Hide()
+        self.Show()
+        
 class RFGControl(GameObject):
     def __init__(self, parent, pos, t, game):
         self._game = game
@@ -2901,7 +3631,7 @@ class RFGControl(GameObject):
 
     def UpdateCardTooltip(self, l):
         d = 0
-        s = 'Extra: ' + str(len(l))
+        s = 'Soul: ' + str(len(l))
         if len(l) > 10:
             l = l[:11]
             d = 1
@@ -2947,6 +3677,38 @@ class OpponentGraveControl(GameObject):
         self.Hide()
         self.Show()
 
+class OpponentDamageControl(GameObject):
+    def __init__(self, parent, pos, t, game):
+        self._game = game
+        GameObject.__init__(self, parent, pos, t)
+
+    def OnPaint(self, event):
+        dc = wx.PaintDC(self)
+        dc.Clear()
+        if len(self._game._opponentdamage) > 0:
+            dc.DrawBitmap(self._game._engine.GetCardGraveImage(self._game._opponentdamage[0]), 0, 0, True)
+        else:
+            dc.SetBrush(wx.Brush(wx.Colour(33,35,36)))
+            dc.SetPen(wx.Pen(wx.Colour(33,35,36)))
+            dc.DrawRectangle(0,0,self._texture.GetWidth(), self._texture.GetHeight())
+        dc.DrawBitmap(self._texture, 0, 0, True)
+
+    def UpdateCardTooltip(self, l):
+        d = 0
+        s = 'Damage: ' + str(len(l))
+        if len(l) > 10:
+            l = l[:11]
+            d = 1
+        for c in l:
+            s += '\n' + c.GetCardName()
+        if d:
+            s += '\n...'
+        tip = wx.ToolTip(s)
+        tip.SetDelay(250)
+        self.SetToolTip(tip)
+        self.Hide()
+        self.Show()
+
 class OpponentRFGControl(GameObject):
     def __init__(self, parent, pos, t, game):
         self._game = game
@@ -2965,7 +3727,7 @@ class OpponentRFGControl(GameObject):
 
     def UpdateCardTooltip(self, l):
         d = 0
-        s = 'Extra: ' + str(len(l))
+        s = 'Soul: ' + str(len(l))
         if len(l) > 10:
             l = l[:11]
             d = 1
@@ -2981,7 +3743,7 @@ class OpponentRFGControl(GameObject):
 
 class HandControl(wx.Panel):
     def __init__(self, parent):
-        wx.Panel.__init__(self, parent, pos=(700,572), size=(580,100))
+        wx.Panel.__init__(self, parent, pos=(1,676), size=(698,100))
         self.SetBackgroundColour(wx.Colour(33,35,36))
         self.SetDropTarget(HandListDropTarget(parent))
 
@@ -3026,7 +3788,7 @@ class ScoreControl(GameObject):
         dc.Clear()
         dc.DrawBitmap(self._texture, 0, 0, True)
         font = wx.Font(pointSize=9,family=wx.FONTFAMILY_DEFAULT,style=wx.FONTSTYLE_NORMAL,weight=wx.FONTWEIGHT_NORMAL, faceName="Tahoma")
-        font.SetNoAntiAliasing(True)
+        #font.SetNoAntiAliasing(True)
         dc.SetFont(font)
         dc.SetTextForeground(wx.WHITE)
         dc.DrawText(str(self._player_score), 16, 10)
@@ -3102,6 +3864,7 @@ class CardControl(GameObject, wx.DataObjectSimple):
         self.Bind(wx.EVT_ENTER_WINDOW, self.OnMouseOver)
         self.Bind(wx.EVT_RIGHT_UP, self.OnRightUp)
         self.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseWell)
+        self.Bind(wx.EVT_LEFT_DCLICK, self.OnMouseDClick)
 
     def AddCounters(self, n=1):
         self._counters += n
@@ -3131,17 +3894,20 @@ class CardControl(GameObject, wx.DataObjectSimple):
     def OnRightUp(self, event):
         self._game.OnCardPopup(self)
     
+    def OnMouseDClick(self, event):
+        self._game.OnCardDClick(self)
+    
     def OnMouseOver(self, event):
         desc = self._card.Name + '\n'
         desc += self._card.Class + '/'
-        desc +=  self._card.Race + '/'
-        desc += self._card.Clan + '\n'
+        desc +=  self._card.Clan + '/'
+        desc += self._card.Race + '\n'
         desc += 'GRADE:' + self._card.Grade + '\n'
         if self._card.Skill != '':
             desc += 'SKILL: ' + self._card.Skill + '\n'
         if self._card.Class == 'Trigger Unit':
             desc += 'TRIGGER: ' + self._card.Trigger + '\n'
-        desc += '\n' + 'POWER:' + self._card.Power + ' CRITICAL:' + self._card.Critical +' SHIELD' + self._card.Shield + '\n'
+        desc += '\n' + 'POWER:' + self._card.Power + ' CRITICAL:' + self._card.Critical +' SHIELD:' + self._card.Shield + '\n'
         if self._card.Effect != '':
             desc +=  '\n' + self._card.Effect + '\n'
         if self._card.Illustrator != '?' and self._card.Illustrator != '':
@@ -3168,6 +3934,16 @@ class CardControl(GameObject, wx.DataObjectSimple):
     
     def GetCardName(self):
         return self._card.Name
+    
+    def GetCardTrigger(self):
+        c = 'No Trigger'
+        if self._card.Class == 'Trigger Unit':
+            c = 'Trigger:' + self._card.Trigger
+        return c
+
+    def GetCardShield(self):
+        c = '+' + self._card.Shield
+        return c
     
     def GetCardEffect(self):
         return self._card.Effect
@@ -3291,7 +4067,7 @@ class CardControl(GameObject, wx.DataObjectSimple):
         dc = wx.PaintDC(self)
         dc.DrawBitmap(self._texture, 0, 0, True)
         font = wx.Font(pointSize=8,family=wx.FONTFAMILY_DEFAULT,style=wx.FONTSTYLE_NORMAL,weight=wx.FONTWEIGHT_NORMAL, faceName="Tahoma")
-        font.SetNoAntiAliasing(True)
+        #font.SetNoAntiAliasing(True)
         dc.SetFont(font)
         name = self.GetCardName()
         p = self.GetCardPosition()
@@ -3302,7 +4078,7 @@ class CardControl(GameObject, wx.DataObjectSimple):
             sx = 10
             sy = 10
             dc.SetTextForeground(wx.BLACK)
-            dc.DrawText(name, nx, ny)
+            #dc.DrawText(name, nx, ny)
         if self.IsTarget():
             tbmp = self._engine.GetSkinImage('Target')
             if self.IsVertical():
@@ -3377,7 +4153,7 @@ class OpponentCardControl(GameObject):
             desc += 'SKILL: ' + self._card.Skill + '\n'
         if self._card.Class == 'Trigger Unit':
             desc += 'TRIGGER: ' + self._card.Trigger + '\n'
-        desc += '\n' + 'POWER:' + self._card.Power + ' CRITICAL:' + self._card.Critical +' SHIELD' + self._card.Shield + '\n'
+        desc += '\n' + 'POWER:' + self._card.Power + ' CRITICAL:' + self._card.Critical +' SHIELD:' + self._card.Shield + '\n'
         if self._card.Effect != '':
             desc +=  '\n' + self._card.Effect
         if self._card.Illustrator != '?' and self._card.Illustrator != '':
@@ -3391,6 +4167,16 @@ class OpponentCardControl(GameObject):
     
     def GetCardName(self):
         return self._card.Name
+    
+    def GetCardTrigger(self):
+        c = 'No Trigger'
+        if self._card.Class == 'Trigger Unit':
+            c = 'Trigger:' + self._card.Trigger
+        return c
+    
+    def GetCardShield(self):
+        c = '+' + self._card.Shield
+        return c
     
     def GetCardEffect(self):
         return self._card.Effect
@@ -3508,7 +4294,7 @@ class OpponentCardControl(GameObject):
         dc = wx.PaintDC(self)
         dc.DrawBitmap(self._texture, 0, 0, True)
         font = wx.Font(pointSize=8,family=wx.FONTFAMILY_DEFAULT,style=wx.FONTSTYLE_NORMAL,weight=wx.FONTWEIGHT_NORMAL, faceName="Tahoma")
-        font.SetNoAntiAliasing(True)
+        #font.SetNoAntiAliasing(True)
         dc.SetFont(font)
         name = self.GetCardName()
         p = self.GetCardPosition()
@@ -3519,7 +4305,7 @@ class OpponentCardControl(GameObject):
             sx = 10
             sy = 10
             dc.SetTextForeground(wx.BLACK)
-            dc.DrawText(name, nx, ny)
+            #dc.DrawText(name, nx, ny)
         if self.IsTarget():
             tbmp = self._engine.GetSkinImage('Target')
             if self.IsVertical():
